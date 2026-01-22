@@ -1,0 +1,263 @@
+================================================================================
+DIAGNÓSTICO COMPLETO - SKY BRASIL AGENCY (skystreamer.online)
+================================================================================
+Data: 19 de dezembro de 2025, 02:45 UTC
+Ambiente: TESTE (Stripe em modo TEST)
+Projeto: Sky Brasil Agency - wwxtqujohqsrcgqopthz
+
+================================================================================
+RESUMO EXECUTIVO
+================================================================================
+
+STATUS GERAL: DEGRADADO (requer atenção em webhook e RLS)
+
+Problemas Críticos Encontrados:
+1. STRIPE WEBHOOK: Falha na verificação de assinatura
+2. DATABASE: Recursão infinita em policy "tenant_members"
+3. RLS: 63 warnings de segurança (policies com acesso anônimo)
+4. PEDIDOS: 42 pendentes, 15 inconsistentes (com payment_id mas status pending)
+
+Sistemas Funcionais:
+✅ Stripe API: Conectada (latência ~400ms)
+✅ Chaves Stripe: Consistentes (TEST mode)
+✅ Create Payment Intent: Funcionando
+✅ Stripe Config: Retornando chave pública
+✅ Supabase Auth: Funcionando
+✅ E-mails (Resend): Configurado
+
+================================================================================
+1. PAGAMENTOS - STRIPE
+================================================================================
+
+CHAVES CONFIGURADAS:
+- STRIPE_SECRET_KEY: ✅ Configurada (modo TEST - sk_test_*)
+- STRIPE_PUBLISHABLE_KEY: ✅ Configurada (modo TEST - pk_test_*)
+- STRIPE_WEBHOOK_SECRET: ✅ Configurada (whsec_tnJ8...)
+
+CONEXÃO API:
+- Status: ✅ Operacional
+- Latência média: 387ms
+- Conta: "Área restrita de SKY Agency" (acct_1Sf9QpLrlUD2tWwK)
+- Cobranças ativas: Sim
+- País: BR
+
+MÉTODOS DE PAGAMENTO:
+- Cartões: ✅ Ativado (Visa, Mastercard, Amex, etc.)
+- PIX: ✅ Ativado no Dashboard (mas falha em TEST mode - normal)
+- Apple Pay: ✅ Ativado
+- Google Pay: ✅ Ativado
+- Link: ❌ Desativado
+- Boleto: ⚠️ Não testado
+
+WEBHOOK:
+- Endpoint: https://wwxtqujohqsrcgqopthz.supabase.co/functions/v1/stripe-webhook
+- Status: ❌ FALHA NA VERIFICAÇÃO DE ASSINATURA
+- Erro: "No signatures found matching the expected signature"
+- Causa provável: STRIPE_WEBHOOK_SECRET não corresponde ao endpoint configurado no Stripe Dashboard
+- Impacto: Pedidos não são atualizados automaticamente para "paid"
+
+EDGE FUNCTIONS:
+- create-payment-intent: ✅ Funcionando (última execução: 02:40:45)
+- stripe-config: ✅ Funcionando
+- stripe-webhook: ❌ Assinatura falhando
+- stripe-checkout-brl: ✅ Disponível
+- stripe-health-check: ✅ Funcionando
+
+AÇÃO NECESSÁRIA (WEBHOOK):
+O usuário deve atualizar STRIPE_WEBHOOK_SECRET com o secret correto do endpoint:
+1. Acesse: https://dashboard.stripe.com/webhooks
+2. Selecione o endpoint: .../functions/v1/stripe-webhook
+3. Copie o "Signing secret" (começa com whsec_)
+4. Atualize o secret no Lovable Cloud
+
+================================================================================
+2. BANCO DE DADOS - SUPABASE
+================================================================================
+
+TABELAS PRINCIPAIS (55 tabelas):
+- orders: ✅ Existe (42 pendentes, 4 pagos)
+- products: ✅ Existe (13 ativos)
+- vip_affiliates: ✅ Existe (1 aprovado)
+- affiliate_commissions: ✅ Existe (1 pendente)
+- profiles: ✅ Existe
+- user_points: ✅ Existe
+- enrollments: ✅ Existe
+- tenant_members: ⚠️ Recursão infinita em RLS policy
+
+ESTATÍSTICAS:
+- Pedidos pendentes: 42
+- Pedidos pagos: 4
+- Pedidos inconsistentes: 15 (com payment_id mas status 'pending')
+- Produtos ativos: 13
+- Afiliados aprovados: 1
+- Comissões pendentes: 1
+
+ERRO CRÍTICO - RECURSÃO INFINITA:
+Tabela: tenant_members
+Erro: "infinite recursion detected in policy"
+Causa: Policy RLS referencia a própria tabela
+Impacto: Queries na tabela podem falhar
+
+================================================================================
+3. SEGURANÇA - RLS (Row Level Security)
+================================================================================
+
+WARNINGS ENCONTRADOS: 63
+
+CATEGORIAS:
+1. Function Search Path Mutable: 3 warnings
+   - Funções sem search_path definido (risco de SQL injection)
+
+2. Extension in Public: 1 warning
+   - Extensão instalada no schema public
+
+3. Anonymous Access Policies: 59+ warnings
+   - Tabelas com policies permitindo acesso anônimo:
+     * cron.job, cron.job_run_details
+     * abandoned_forms, admin_audit_log, admin_availability
+     * admin_emails, admin_invitations
+     * affiliate_commissions, affiliate_invites
+     * E muitas outras...
+
+IMPACTO:
+- Dados podem ser acessíveis sem autenticação
+- Risco de exposição de dados sensíveis
+
+RECOMENDAÇÃO:
+- Revisar todas as policies e restringir acesso anônimo
+- Usar auth.uid() para verificar usuário autenticado
+
+================================================================================
+4. E-MAILS
+================================================================================
+
+CONFIGURAÇÕES:
+- RESEND_API_KEY: ✅ Configurada
+- BREVO_API_KEY: ✅ Configurada
+
+EDGE FUNCTIONS:
+- send-order-confirmation: ⚠️ Sem logs recentes
+- send-admin-reply: ✅ Disponível
+- send-affiliate-invite: ✅ Disponível
+- send-campaign-email: ✅ Disponível
+
+TEMPLATES:
+- paymentSuccessEmail: ✅ Implementado
+- paymentFailedEmail: ✅ Implementado
+- affiliateCommissionEmail: ✅ Implementado
+- refundProcessedEmail: ✅ Implementado
+
+================================================================================
+5. FRONTEND
+================================================================================
+
+CONSOLE ERRORS:
+- findDOMNode deprecated (react-input-mask) - Warning, não crítico
+- React Router Future Flags - Warning, não crítico
+
+NETWORK ERRORS:
+- Nenhum erro de rede detectado
+
+CSP (Content Security Policy):
+- ⚠️ Não detectado no index.html
+- Stripe preconnect: ✅ Configurado
+- Fonts preconnect: ✅ Configurado
+
+PERFORMANCE:
+- Preload fonts: ✅ Configurado
+- Prefetch routes: ✅ Configurado
+- Critical CSS: ✅ Inline
+
+================================================================================
+6. INTEGRAÇÕES
+================================================================================
+
+FACEBOOK/META:
+- FACEBOOK_APP_ID: ✅ Configurado
+- FACEBOOK_APP_SECRET: ✅ Configurado
+- FACEBOOK_ACCESS_TOKEN: ✅ Configurado
+- FACEBOOK_PAGE_ID: ✅ Configurado
+- SDK: ✅ Carregado no index.html
+
+WHATSAPP:
+- WHATSAPP_ACCESS_TOKEN: ✅ Configurado
+- WHATSAPP_BUSINESS_ID: ✅ Configurado
+- WHATSAPP_PHONE_NUMBER_ID: ✅ Configurado
+
+INSTAGRAM:
+- INSTAGRAM_ACCESS_TOKEN: ✅ Configurado
+- INSTAGRAM_ACCOUNT_ID: ✅ Configurado
+
+IA:
+- ELEVENLABS_API_KEY: ✅ Configurado (via connector)
+- LOVABLE_API_KEY: ✅ Configurado
+
+================================================================================
+7. AÇÕES CORRETIVAS NECESSÁRIAS
+================================================================================
+
+PRIORIDADE ALTA:
+
+1. ATUALIZAR STRIPE_WEBHOOK_SECRET
+   - Acessar Stripe Dashboard > Webhooks
+   - Copiar o signing secret do endpoint correto
+   - Atualizar no Lovable Cloud
+
+2. CORRIGIR RECURSÃO EM tenant_members
+   - Criar função SECURITY DEFINER para verificar membership
+   - Atualizar RLS policy para usar a função
+
+3. ATUALIZAR PEDIDOS INCONSISTENTES
+   - 15 pedidos com payment_id mas status 'pending'
+   - Verificar no Stripe se foram pagos
+   - Atualizar status para 'paid' se confirmado
+
+PRIORIDADE MÉDIA:
+
+4. REVISAR RLS POLICIES
+   - Remover acesso anônimo de tabelas sensíveis
+   - Adicionar auth.uid() checks
+
+5. CORRIGIR API VERSION DO WEBHOOK
+   - Mudar de "2025-12-15.clover" para "2025-08-27.basil"
+
+6. ADICIONAR CSP NO INDEX.HTML
+   - Adicionar meta tag Content-Security-Policy
+   - Incluir domínios: stripe.com, supabase.co, resend.com
+
+PRIORIDADE BAIXA:
+
+7. ATUALIZAR react-input-mask
+   - Substituir por biblioteca moderna sem findDOMNode
+
+8. ADICIONAR REACT ROUTER FUTURE FLAGS
+   - v7_startTransition
+   - v7_relativeSplatPath
+
+================================================================================
+8. CONFIGURAÇÕES RECOMENDADAS
+================================================================================
+
+STRIPE:
+- Secret Key: sk_test_* (TEST) ou sk_live_* (LIVE)
+- Publishable Key: pk_test_* (TEST) ou pk_live_* (LIVE)
+- Webhook Secret: whsec_* (do endpoint específico)
+- API Version: 2025-08-27.basil
+- Currency: brl
+- Payment Methods: card, pix, boleto
+
+SUPABASE:
+- RLS: Enabled em todas as tabelas
+- Auth auto-confirm: Enabled
+- Realtime: Enabled para orders, chat_messages
+
+E-MAILS:
+- From: noreply@skystreamer.online
+- Reply-to: contato@skystreamer.online
+
+================================================================================
+FIM DO DIAGNÓSTICO
+================================================================================
+
+Gerado automaticamente por Lovable AI
+Data: 19/12/2025 02:45 UTC

@@ -1,0 +1,16 @@
+export { default as MemberLayout } from './MemberLayout';
+export { default as MemberDashboard } from './MemberDashboard';
+export { default as MyCourses } from './MyCourses';
+export { default as CourseViewer } from './CourseViewer';
+export { default as Certificates } from './Certificates';
+export { default as CertificateView } from './CertificateView';
+export { default as MemberProgress } from './MemberProgress';
+export { default as Community } from './Community';
+export { default as MemberSettings } from './MemberSettings';
+export { default as MemberProfile } from './MemberProfile';
+export { default as ExamsList } from './ExamsList';
+export { default as ExamPlayer } from './ExamPlayer';
+export { default as AcademicTranscript } from './AcademicTranscript';
+export { default as StudentPerformanceReport } from './StudentPerformanceReport';
+export { default as VerifyCertificate } from './VerifyCertificate';
+export { LessonQuizPlayer } from './LessonQuizPlayer';
