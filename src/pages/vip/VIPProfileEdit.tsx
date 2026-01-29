@@ -169,7 +169,17 @@ const VIPProfileEdit = () => {
         .eq('user_id', user.id)
         .order('start_date', { ascending: false });
       
-      if (expData) setExperiences(expData);
+      if (expData) setExperiences((expData as any[]).map((e: any) => ({
+        id: e.id,
+        company_name: e.company || '',
+        position: e.title || '',
+        location: e.location || '',
+        start_date: e.start_date || '',
+        end_date: e.end_date,
+        is_current: e.is_current || false,
+        description: e.description || '',
+        company_logo_url: '',
+      })));
 
       // Load education
       const { data: eduData } = await supabase
@@ -178,16 +188,31 @@ const VIPProfileEdit = () => {
         .eq('user_id', user.id)
         .order('start_date', { ascending: false });
       
-      if (eduData) setEducation(eduData);
+      if (eduData) setEducation((eduData as any[]).map((e: any) => ({
+        id: e.id,
+        institution_name: e.school || '',
+        degree: e.degree || '',
+        field_of_study: e.field_of_study || '',
+        start_date: e.start_date || '',
+        end_date: e.end_date,
+        grade: '',
+        description: e.description || '',
+        institution_logo_url: '',
+      })));
 
       // Load skills
       const { data: skillsData } = await supabase
         .from('profile_skills')
         .select('*')
         .eq('user_id', user.id)
-        .order('endorsements_count', { ascending: false });
+        .order('endorsement_count', { ascending: false });
       
-      if (skillsData) setSkills(skillsData);
+      if (skillsData) setSkills((skillsData as any[]).map((s: any) => ({
+        id: s.id,
+        skill_name: s.name || '',
+        proficiency_level: 'intermediate',
+        endorsements_count: s.endorsement_count || 0,
+      })));
 
       // Load edit history
       const { data: historyData } = await supabase
@@ -444,12 +469,11 @@ const VIPProfileEdit = () => {
     if (!user || !newSkill.skill_name) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('profile_skills')
         .insert({
           user_id: user.id,
-          skill_name: newSkill.skill_name,
-          proficiency_level: newSkill.proficiency_level || 'intermediate'
+          name: newSkill.skill_name,
         });
 
       if (error) throw error;

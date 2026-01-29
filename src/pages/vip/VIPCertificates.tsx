@@ -75,10 +75,22 @@ export default function VIPCertificates() {
     queryFn: async () => {
       const { data } = await supabase
         .from('company_settings')
-        .select('*')
-        .limit(1)
-        .maybeSingle();
-      return data;
+        .select('*');
+      
+      // Transform key-value pairs into object
+      const settings: Record<string, any> = {};
+      if (data) {
+        data.forEach((row: any) => {
+          try {
+            settings[row.setting_key] = typeof row.setting_value === 'string' 
+              ? JSON.parse(row.setting_value) 
+              : row.setting_value;
+          } catch {
+            settings[row.setting_key] = row.setting_value;
+          }
+        });
+      }
+      return settings;
     }
   });
 
@@ -106,12 +118,12 @@ export default function VIPCertificates() {
       } catch (error) {
         console.error('Download error:', error);
         // Fallback: generate new PDF
-        await downloadCertificatePDF(cert, company);
+        await downloadCertificatePDF(cert, company as any);
         toast.success('PDF gerado e baixado!');
       }
     } else {
       // Generate PDF on the fly
-      await downloadCertificatePDF(cert, company);
+      await downloadCertificatePDF(cert, company as any);
       toast.success('PDF gerado e baixado!');
     }
   };

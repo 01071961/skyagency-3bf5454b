@@ -117,7 +117,17 @@ export default function VIPHistory() {
         .order('created_at', { ascending: false })
         .limit(50);
 
-      setTransactions(transData || []);
+      setTransactions((transData || []).map((t: any) => ({
+        id: t.id,
+        type: t.transaction_type || 'earn',
+        amount: t.points || 0,
+        balance_after: 0,
+        description: t.description || '',
+        reference_id: t.reference_id,
+        reference_type: t.reference_type,
+        order_id: t.reference_id,
+        created_at: t.created_at,
+      })));
 
       // Load redemptions
       const { data: redeemData } = await supabase

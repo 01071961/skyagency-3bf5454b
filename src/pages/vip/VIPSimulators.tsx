@@ -21,7 +21,7 @@ interface Simulator {
   total_questions: number;
   time_limit_minutes: number | null;
   passing_score: number;
-  max_attempts: number | null;
+  max_attempts?: number | null;
   is_active: boolean;
   product_id: string;
   products: {

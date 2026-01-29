@@ -170,15 +170,22 @@ export default function VIPDashboard() {
       }
 
       // Load presentations
-      const { data: presentationsData } = await supabase
-        .from('vip_presentations')
-        .select('id, title, updated_at')
-        .eq('user_id', user!.id)
-        .order('updated_at', { ascending: false })
-        .limit(5);
+      let presentationsData: any[] = [];
+      try {
+        const { data } = await (supabase as any)
+          .from('vip_presentations')
+          .select('id, title, updated_at')
+          .eq('user_id', user!.id)
+          .order('updated_at', { ascending: false })
+          .limit(5);
+        
+        presentationsData = data || [];
+      } catch (e) {
+        console.log('Presentations table not available');
+      }
 
-      if (presentationsData) {
-        setPresentations(presentationsData);
+      if (presentationsData.length > 0) {
+        setPresentations(presentationsData as PresentationData[]);
       }
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error);

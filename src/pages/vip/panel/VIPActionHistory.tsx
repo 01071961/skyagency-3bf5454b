@@ -56,7 +56,7 @@ export default function VIPActionHistory() {
     try {
       setIsLoading(true);
       
-      let query = supabase
+      let query = (supabase as any)
         .from('vip_affiliate_actions')
         .select('*')
         .eq('user_id', user?.id)
@@ -71,7 +71,7 @@ export default function VIPActionHistory() {
       if (error) throw error;
 
       setActions(data || []);
-      setTotalPoints(data?.reduce((sum, a) => sum + a.points_earned, 0) || 0);
+      setTotalPoints((data || []).reduce((sum: number, a: any) => sum + (a.points_earned || 0), 0));
     } catch (error) {
       console.error('Error loading actions:', error);
     } finally {

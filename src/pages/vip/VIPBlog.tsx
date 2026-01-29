@@ -46,7 +46,8 @@ interface Post {
   image_url?: string;
   likes_count: number;
   comments_count: number;
-  views_count: number;
+  views_count?: number;
+  shares_count?: number;
   is_pinned: boolean;
   created_at: string;
   author_id: string;
@@ -155,7 +156,18 @@ export default function VIPBlog() {
         const profile = affiliate ? profilesMap.get(affiliate.user_id) : null;
         
         return {
-          ...post,
+          id: post.id,
+          title: post.title || '',
+          content: post.content || '',
+          category: post.category || 'geral',
+          image_url: post.image_url,
+          likes_count: post.likes_count || 0,
+          comments_count: post.comments_count || 0,
+          views_count: post.shares_count || 0,
+          shares_count: post.shares_count || 0,
+          is_pinned: post.is_pinned || false,
+          created_at: post.created_at || '',
+          author_id: post.author_id,
           author: affiliate ? {
             id: affiliate.id,
             tier: affiliate.tier,

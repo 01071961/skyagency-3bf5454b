@@ -228,7 +228,7 @@ export default function VIPSlidesCreator() {
     if (!user) return;
     
     try {
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('vip_presentations')
         .select('*')
         .eq('user_id', user.id)
@@ -237,14 +237,14 @@ export default function VIPSlidesCreator() {
         .maybeSingle();
 
       if (data) {
-        const slidesData = Array.isArray(data.slides) ? data.slides : [createDefaultSlide(0)];
-        const themeData = typeof data.theme === 'object' && data.theme !== null 
-          ? (data.theme as { name?: string })?.name || 'dark' 
-          : (typeof data.theme === 'string' ? data.theme : 'dark');
+        const slidesData = Array.isArray((data as any).slides) ? (data as any).slides : [createDefaultSlide(0)];
+        const themeData = typeof (data as any).theme === 'object' && (data as any).theme !== null 
+          ? ((data as any).theme as { name?: string })?.name || 'dark' 
+          : (typeof (data as any).theme === 'string' ? (data as any).theme : 'dark');
         
         const loadedPresentation = {
-          id: data.id,
-          title: data.title || 'Nova Apresentação',
+          id: (data as any).id,
+          title: (data as any).title || 'Nova Apresentação',
           slides: slidesData as unknown as Slide[],
           theme: themeData
         };
@@ -546,7 +546,7 @@ export default function VIPSlidesCreator() {
   const savePresentation = async () => {
     setSaving(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vip_presentations')
         .upsert({
           id: presentation.id,
@@ -598,7 +598,7 @@ export default function VIPSlidesCreator() {
   const handleShare = async () => {
     try {
       const shareToken = crypto.randomUUID().slice(0, 8);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('vip_presentations')
         .upsert({
           id: presentation.id,

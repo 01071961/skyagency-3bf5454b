@@ -212,7 +212,7 @@ export default function MyFilesHybrid() {
         if (uploadError) throw uploadError;
 
         // Save metadata to user_files table
-        const { error: dbError } = await supabase
+        const { error: dbError } = await (supabase as any)
           .from('user_files')
           .insert({
             user_id: user.id,
@@ -294,7 +294,7 @@ export default function MyFilesHybrid() {
           .remove([file.path]);
 
         // Delete from database
-        await supabase
+        await (supabase as any)
           .from('user_files')
           .delete()
           .eq('id', file.id);

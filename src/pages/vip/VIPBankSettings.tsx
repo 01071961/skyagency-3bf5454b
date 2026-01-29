@@ -69,9 +69,9 @@ export default function VIPBankSettings() {
     try {
       setIsLoading(true);
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vip_affiliates')
-        .select('id, pix_key, bank_info, stripe_account_id, stripe_account_status')
+        .select('id, pix_key, bank_info')
         .eq('user_id', user?.id)
         .single();
       
@@ -83,26 +83,33 @@ export default function VIPBankSettings() {
           throw error;
         }
       } else if (data) {
-        setAffiliate(data as unknown as AffiliateData);
-        if (data.pix_key) {
-          setPixKey(data.pix_key);
+        const affiliateData: AffiliateData = {
+          id: data.id,
+          pix_key: data.pix_key || null,
+          bank_info: data.bank_info || null,
+          stripe_account_id: null,
+          stripe_account_status: null,
+        };
+        setAffiliate(affiliateData);
+        if (affiliateData.pix_key) {
+          setPixKey(affiliateData.pix_key);
           // Try to detect key type
-          if (data.pix_key.includes('@')) {
+          if (affiliateData.pix_key.includes('@')) {
             setPixKeyType('email');
-          } else if (data.pix_key.replace(/\D/g, '').length === 11) {
+          } else if (affiliateData.pix_key.replace(/\D/g, '').length === 11) {
             setPixKeyType('cpf');
-          } else if (data.pix_key.replace(/\D/g, '').length === 14) {
+          } else if (affiliateData.pix_key.replace(/\D/g, '').length === 14) {
             setPixKeyType('cnpj');
-          } else if (data.pix_key.replace(/\D/g, '').length === 10 || data.pix_key.replace(/\D/g, '').length === 11) {
+          } else if (affiliateData.pix_key.replace(/\D/g, '').length === 10 || affiliateData.pix_key.replace(/\D/g, '').length === 11) {
             setPixKeyType('phone');
           } else {
             setPixKeyType('random');
           }
         }
-        if (data.bank_info && typeof data.bank_info === 'object') {
+        if (affiliateData.bank_info && typeof affiliateData.bank_info === 'object') {
           setBankInfo({
             ...bankInfo,
-            ...(data.bank_info as BankInfo),
+            ...(affiliateData.bank_info as BankInfo),
           });
         }
       }

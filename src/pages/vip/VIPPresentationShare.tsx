@@ -76,7 +76,7 @@ export default function VIPPresentationShare() {
   const loadPresentation = async () => {
     setLoading(true);
     try {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await (supabase as any)
         .from('vip_presentations')
         .select('*')
         .eq('share_token', token)
@@ -91,16 +91,20 @@ export default function VIPPresentationShare() {
       }
 
       // Update view count
-      await supabase
-        .from('vip_presentations')
-        .update({ views_count: (data.views_count || 0) + 1 })
-        .eq('id', data.id);
+      try {
+        await (supabase as any)
+          .from('vip_presentations')
+          .update({ views_count: ((data as any).views_count || 0) + 1 })
+          .eq('id', (data as any).id);
+      } catch (e) {
+        console.log('Could not update views count');
+      }
 
       setPresentation({
-        id: data.id,
-        title: data.title as string,
-        slides: (Array.isArray(data.slides) ? data.slides : []) as unknown as Slide[],
-        theme: (data.theme as string) || 'dark'
+        id: (data as any).id,
+        title: (data as any).title as string,
+        slides: (Array.isArray((data as any).slides) ? (data as any).slides : []) as unknown as Slide[],
+        theme: ((data as any).theme as string) || 'dark'
       });
     } catch (err) {
       console.error('Error loading presentation:', err);

@@ -135,7 +135,7 @@ export default function VIPNetworkLiveCreate() {
 
     try {
       // Create VIP post for live
-      const { data: postData, error: postError } = await supabase
+      const { data: postData, error: postError } = await (supabase as any)
         .from('vip_posts')
         .insert({
           author_id: user.id,
