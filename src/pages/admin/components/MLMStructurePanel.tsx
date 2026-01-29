@@ -38,7 +38,7 @@ interface Affiliate {
   total_earnings: number;
   team_earnings: number;
   direct_referrals_count: number;
-  parent_affiliate_id: string | null;
+  sponsor_id: string | null;
   created_at: string;
   profile?: {
     name: string;
@@ -100,7 +100,7 @@ export default function MLMStructurePanel() {
           *,
           profiles:user_id (name, email)
         `)
-        .eq('status', 'approved')
+        .in('status', ['approved', 'active'])
         .order('total_earnings', { ascending: false });
       
       if (error) throw error;
@@ -161,12 +161,12 @@ export default function MLMStructurePanel() {
   );
 
   const getDownline = (affiliateId: string) => {
-    return affiliates?.filter(a => a.parent_affiliate_id === affiliateId) || [];
+    return affiliates?.filter(a => a.sponsor_id === affiliateId) || [];
   };
 
   const getUplineChain = (affiliate: Affiliate): Affiliate[] => {
-    if (!affiliate.parent_affiliate_id) return [];
-    const parent = affiliates?.find(a => a.id === affiliate.parent_affiliate_id);
+    if (!affiliate.sponsor_id) return [];
+    const parent = affiliates?.find(a => a.id === affiliate.sponsor_id);
     if (!parent) return [];
     return [parent, ...getUplineChain(parent)];
   };
@@ -336,7 +336,7 @@ export default function MLMStructurePanel() {
                   <div className="text-center py-8 text-muted-foreground">Nenhum afiliado encontrado</div>
                 ) : (
                   filteredAffiliates?.slice(0, 20).map((affiliate) => {
-                    const parent = affiliates?.find(a => a.id === affiliate.parent_affiliate_id);
+                    const parent = affiliates?.find(a => a.id === affiliate.sponsor_id);
                     const downlineCount = getDownline(affiliate.id).length;
                     const isSelected = selectedAffiliate === affiliate.id;
                     
@@ -431,7 +431,7 @@ export default function MLMStructurePanel() {
                         </TableRow>
                       ) : (
                         filteredAffiliates?.map((affiliate) => {
-                          const parent = affiliates?.find(a => a.id === affiliate.parent_affiliate_id);
+                          const parent = affiliates?.find(a => a.id === affiliate.sponsor_id);
                           const downlineCount = getDownline(affiliate.id).length;
                           
                           return (

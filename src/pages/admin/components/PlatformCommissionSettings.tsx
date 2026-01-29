@@ -95,12 +95,12 @@ export default function PlatformCommissionSettings() {
     }
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats, refetch: refetchStats } = useQuery({
     queryKey: ['platform-commission-stats'],
     queryFn: async () => {
       const [commissionsResult, affiliatesResult, ordersResult] = await Promise.all([
         supabase.from('affiliate_commissions').select('amount, status, level, commission_amount'),
-        supabase.from('vip_affiliates').select('id, status, referral_code'),
+        supabase.from('vip_affiliates').select('id, status, referral_code, sponsor_id').in('status', ['approved', 'active']),
         supabase.from('orders').select('total, status').eq('status', 'paid'),
       ]);
 
@@ -112,8 +112,9 @@ export default function PlatformCommissionSettings() {
       const pendingCommissions = commissionsData.filter(c => c.status === 'pending').reduce((sum, c) => sum + Number(c.commission_amount || c.amount || 0), 0);
       const paidCommissions = commissionsData.filter(c => c.status === 'paid').reduce((sum, c) => sum + Number(c.commission_amount || c.amount || 0), 0);
       const mlmCommissions = commissionsData.filter(c => c.level && c.level > 1).reduce((sum, c) => sum + Number(c.commission_amount || c.amount || 0), 0);
-      const totalAffiliates = affiliatesData.filter(a => a.status === 'approved').length;
-      const affiliatesWithParent = affiliatesData.filter(a => a.referral_code).length;
+      const totalAffiliates = affiliatesData.length;
+      // Fix: Count affiliates that have sponsor_id set (linked in MLM structure)
+      const affiliatesWithParent = affiliatesData.filter(a => a.sponsor_id !== null).length;
       const totalRevenue = ordersData.reduce((sum, o) => sum + Number(o.total), 0);
       const platformEarnings = totalCommissions * 0.1; // 10% platform fee estimate
 
@@ -136,15 +137,23 @@ export default function PlatformCommissionSettings() {
     }
   }, [savedSettings]);
 
-  // Function to fix MLM structure (placeholder - RPC not available)
+  // Function to fix MLM structure using edge function
   const handleFixMLM = async () => {
     setIsFixingMLM(true);
     try {
-      // Note: link_referrals_to_affiliates RPC function not available
-      // This would need to be implemented as an edge function
-      toast.info('Função de correção MLM ainda não implementada. Use Edge Function.');
-      queryClient.invalidateQueries({ queryKey: ['platform-commission-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['mlm-affiliates'] });
+      const { data, error } = await supabase.functions.invoke('fix-mlm-structure');
+      
+      if (error) {
+        throw new Error(error.message || 'Erro ao chamar função');
+      }
+      
+      if (data?.success) {
+        toast.success(`MLM corrigido: ${data.stats?.linksCreated || 0} vínculos criados, ${data.stats?.countsRecalculated || 0} contagens atualizadas`);
+        refetchStats();
+        queryClient.invalidateQueries({ queryKey: ['mlm-affiliates'] });
+      } else {
+        toast.error(data?.error || 'Erro ao corrigir estrutura MLM');
+      }
     } catch (error) {
       console.error('Error fixing MLM:', error);
       toast.error('Erro ao corrigir estrutura MLM');

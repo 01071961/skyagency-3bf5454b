@@ -475,11 +475,11 @@ serve(async (req) => {
         }
 
         // Process MLM Level 1 (parent of direct affiliate)
-        if (affiliate.parent_affiliate_id) {
+        if (affiliate.sponsor_id) {
           const { data: upline1 } = await supabase
             .from('vip_affiliates')
             .select('*, profiles:user_id(email, name)')
-            .eq('id', affiliate.parent_affiliate_id)
+            .eq('id', affiliate.sponsor_id)
             .eq('status', 'approved')
             .single();
 
@@ -518,11 +518,11 @@ serve(async (req) => {
             }
 
             // Process MLM Level 2 (parent of level 1)
-            if (upline1.parent_affiliate_id) {
+            if (upline1.sponsor_id) {
               const { data: upline2 } = await supabase
                 .from('vip_affiliates')
                 .select('*, profiles:user_id(email, name)')
-                .eq('id', upline1.parent_affiliate_id)
+                .eq('id', upline1.sponsor_id)
                 .eq('status', 'approved')
                 .single();
 
