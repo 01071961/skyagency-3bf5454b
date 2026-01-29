@@ -70,7 +70,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-role-invite]
-verify_jwt = true
+verify_jwt = false
 
 [functions.send-test-email]
 verify_jwt = false
