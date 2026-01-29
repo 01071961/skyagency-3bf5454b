@@ -76,11 +76,19 @@ function CheckoutForm({ orderId, onSuccess, totalPrice }: CheckoutFormProps) {
 
       if (paymentError) {
         let message = 'Erro ao processar pagamento';
+        
+        // Handle specific Stripe errors with user-friendly messages
         if (paymentError.type === 'card_error') {
           message = paymentError.message || 'Cartão recusado';
         } else if (paymentError.type === 'validation_error') {
           message = paymentError.message || 'Verifique os dados';
+        } else if (paymentError.message?.includes('boleto tax id cannot match')) {
+          // Stripe doesn't allow boleto CPF to match merchant's CPF/CNPJ
+          message = 'O CPF informado não pode ser utilizado para boleto. Por favor, utilize outro CPF ou escolha outra forma de pagamento (Cartão ou PIX).';
+        } else if (paymentError.message?.includes('tax id')) {
+          message = 'CPF inválido para esta forma de pagamento. Tente Cartão ou PIX.';
         }
+        
         setError(message);
         toast.error(message);
         setIsProcessing(false);
@@ -98,8 +106,16 @@ function CheckoutForm({ orderId, onSuccess, totalPrice }: CheckoutFormProps) {
       }
     } catch (err: any) {
       console.error('[CHECKOUT] Unexpected error:', err);
-      setError('Erro inesperado. Tente novamente.');
-      toast.error('Erro inesperado');
+      const errorMessage = err?.message || '';
+      
+      // Handle boleto tax id error at catch level too
+      if (errorMessage.includes('boleto tax id cannot match')) {
+        setError('O CPF informado não pode ser utilizado para boleto. Use Cartão ou PIX.');
+        toast.error('CPF não aceito para boleto. Use outra forma de pagamento.');
+      } else {
+        setError('Erro inesperado. Tente novamente.');
+        toast.error('Erro inesperado');
+      }
       setIsProcessing(false);
     }
   };

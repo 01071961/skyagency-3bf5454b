@@ -84,19 +84,27 @@ export const StripeCheckoutForm = ({ onSuccess, onCancel }: StripeCheckoutFormPr
         
         // User-friendly error messages
         let message = 'Erro ao processar pagamento';
-        switch (error.type) {
-          case 'card_error':
-            message = error.message || 'Cartão recusado. Verifique os dados ou tente outro cartão.';
-            break;
-          case 'validation_error':
-            message = error.message || 'Verifique os dados informados';
-            break;
-          default:
-            if (error.code === 'payment_intent_unexpected_state') {
-              message = 'O pagamento já foi processado ou expirou. Recarregue a página.';
-            } else {
-              message = error.message || 'Erro ao processar pagamento';
-            }
+        
+        // Handle boleto tax id error first (takes priority)
+        if (error.message?.includes('boleto tax id cannot match')) {
+          message = 'O CPF informado não pode ser utilizado para boleto. Por favor, utilize outro CPF ou escolha outra forma de pagamento (Cartão ou PIX).';
+        } else if (error.message?.includes('tax id')) {
+          message = 'CPF inválido para esta forma de pagamento. Tente Cartão ou PIX.';
+        } else {
+          switch (error.type) {
+            case 'card_error':
+              message = error.message || 'Cartão recusado. Verifique os dados ou tente outro cartão.';
+              break;
+            case 'validation_error':
+              message = error.message || 'Verifique os dados informados';
+              break;
+            default:
+              if (error.code === 'payment_intent_unexpected_state') {
+                message = 'O pagamento já foi processado ou expirou. Recarregue a página.';
+              } else {
+                message = error.message || 'Erro ao processar pagamento';
+              }
+          }
         }
         
         toast.error(message);
