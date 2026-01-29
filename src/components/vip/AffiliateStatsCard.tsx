@@ -23,7 +23,6 @@ const tierConfig: Record<string, { color: string; bgColor: string; icon: React.R
   silver: { color: 'text-slate-400', bgColor: 'bg-slate-400', icon: <Star className="h-4 w-4" /> },
   gold: { color: 'text-yellow-500', bgColor: 'bg-yellow-500', icon: <Crown className="h-4 w-4" /> },
   diamond: { color: 'text-cyan-500', bgColor: 'bg-cyan-500', icon: <Crown className="h-4 w-4" /> },
-  platinum: { color: 'text-violet-500', bgColor: 'bg-violet-500', icon: <Crown className="h-4 w-4" /> }
 };
 
 const tierLabels: Record<string, string> = {
@@ -31,7 +30,6 @@ const tierLabels: Record<string, string> = {
   silver: 'Prata',
   gold: 'Ouro',
   diamond: 'Diamante',
-  platinum: 'Platinum'
 };
 
 export function AffiliateStatsCard({

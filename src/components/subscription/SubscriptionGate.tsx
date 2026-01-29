@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/auth';
 import { cn } from '@/lib/utils';
 
-type RequiredTier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'platinum';
+type RequiredTier = 'bronze' | 'silver' | 'gold' | 'diamond';
 
 interface SubscriptionGateProps {
   children: ReactNode;
@@ -23,11 +23,10 @@ interface SubscriptionGateProps {
   fallback?: ReactNode;
 }
 
-const TIER_ORDER = ['bronze', 'silver', 'gold', 'diamond', 'platinum'];
+const TIER_ORDER = ['bronze', 'silver', 'gold', 'diamond'];
 const TIER_ALIASES: Record<string, string> = {
   'ouro': 'gold',
   'prata': 'silver',
-  'platina': 'platinum',
   'diamante': 'diamond'
 };
 
@@ -36,7 +35,6 @@ const TIER_INFO: Record<string, { label: string; icon: string; color: string }> 
   silver: { label: 'Prata', icon: '🥈', color: 'text-gray-400' },
   gold: { label: 'Ouro', icon: '🥇', color: 'text-amber-500' },
   diamond: { label: 'Diamante', icon: '💎', color: 'text-blue-400' },
-  platinum: { label: 'Platina', icon: '👑', color: 'text-purple-500' }
 };
 
 function normalizeTier(tier: string | null | undefined): string {

@@ -44,17 +44,15 @@ const COMMISSION_TIERS = [
   { min: 0, max: 10, label: 'Bronze', color: 'bg-amber-700' },
   { min: 10, max: 25, label: 'Prata', color: 'bg-gray-400' },
   { min: 25, max: 40, label: 'Ouro', color: 'bg-yellow-500' },
-  { min: 40, max: 60, label: 'Platina', color: 'bg-cyan-400' },
-  { min: 60, max: 100, label: 'Diamante', color: 'bg-purple-500' },
+  { min: 40, max: 100, label: 'Diamante', color: 'bg-purple-500' },
 ];
 
 // Níveis VIP para acesso gratuito
 const VIP_TIERS = [
   { value: 'bronze', label: 'Bronze', color: 'bg-amber-700', icon: '🥉', points: '0-499 pts' },
   { value: 'silver', label: 'Prata', color: 'bg-gray-400', icon: '🥈', points: '500-1.999 pts' },
-  { value: 'gold', label: 'Ouro', color: 'bg-yellow-500', icon: '🥇', points: '2.000-4.999 pts' },
-  { value: 'diamond', label: 'Diamante', color: 'bg-purple-500', icon: '💎', points: '5.000-9.999 pts' },
-  { value: 'platinum', label: 'Platina', color: 'bg-cyan-400', icon: '👑', points: '10.000+ pts' },
+  { value: 'gold', label: 'Ouro', color: 'bg-yellow-500', icon: '🥇', points: '2.000-9.999 pts' },
+  { value: 'diamond', label: 'Diamante', color: 'bg-purple-500', icon: '💎', points: '10.000+ pts' },
 ];
 
 export default function AffiliateSettingsPanel({ productId }: AffiliateSettingsPanelProps) {
