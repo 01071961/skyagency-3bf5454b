@@ -82,7 +82,7 @@ export default function UnifiedCertificationManager() {
       const enrichedCourses: CourseWithStats[] = await Promise.all(
         (productsData as Array<{ id: string; name: string; description: string | null; cover_image_url: string | null; status: string }>).map(async (course) => {
           const [evalResult, certResult, simResult, enrollResult] = await Promise.all([
-            supabase.from('avaliacoes').select('*', { count: 'exact', head: true }).eq('product_id', course.id),
+            (supabase.from('exam_attempts').select('*', { count: 'exact', head: true }).eq('exam_id', course.id) as any),
             supabase.from('course_certificates').select('*', { count: 'exact', head: true }).eq('product_id', course.id),
             supabase.from('exam_simulators').select('*', { count: 'exact', head: true }).eq('product_id', course.id),
             supabase.from('enrollments').select('*', { count: 'exact', head: true }).eq('product_id', course.id),

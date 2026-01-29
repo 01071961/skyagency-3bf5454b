@@ -508,18 +508,18 @@ export default function GamificationManager() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredRewards?.map((reward) => (
+                {filteredRewards?.map((reward: any) => (
                   <TableRow key={reward.id}>
                     <TableCell className="font-medium">{reward.name}</TableCell>
-                    <TableCell><Badge variant="outline">{reward.type}</Badge></TableCell>
-                    <TableCell>{reward.points_required}</TableCell>
+                    <TableCell><Badge variant="outline">{reward.type || 'product'}</Badge></TableCell>
+                    <TableCell>{reward.points_cost || reward.points_required || 0}</TableCell>
                     <TableCell>{getTierBadge(reward.tier_required || 'bronze')}</TableCell>
                     <TableCell>
-                      {reward.type === 'cash' && `R$ ${reward.cash_value?.toFixed(2)}`}
-                      {reward.type === 'discount' && `${reward.discount_percent}%`}
-                      {!['cash', 'discount'].includes(reward.type) && '-'}
+                      {reward.type === 'cash' && `R$ ${(reward.cash_value || 0).toFixed(2)}`}
+                      {reward.type === 'discount' && `${reward.discount_percent || 0}%`}
+                      {!['cash', 'discount'].includes(reward.type || '') && '-'}
                     </TableCell>
-                    <TableCell>{reward.stock ?? '∞'}</TableCell>
+                    <TableCell>{reward.quantity_available ?? reward.stock ?? '∞'}</TableCell>
                     <TableCell>
                       <Badge className={reward.is_active ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}>
                         {reward.is_active ? 'Ativo' : 'Inativo'}

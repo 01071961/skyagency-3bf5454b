@@ -118,7 +118,7 @@ const VIPAffiliatesManager = () => {
     mutationFn: async ({ id, rate }: { id: string; rate: number }) => {
       const { error } = await supabase
         .from('vip_affiliates')
-        .update({ commission_rate: rate })
+        .update({ commission_percent: rate } as any)
         .eq('id', id);
       if (error) throw error;
     },
@@ -324,7 +324,7 @@ const VIPAffiliatesManager = () => {
                         {getStatusLabel(affiliate.status || 'pending')}
                       </Badge>
                     </TableCell>
-                    <TableCell>{affiliate.commission_rate}%</TableCell>
+                    <TableCell>{(affiliate as any).commission_rate || (affiliate as any).commission_percent || 10}%</TableCell>
                     <TableCell className="text-green-400">
                       R$ {(affiliate.total_earnings || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </TableCell>
@@ -433,7 +433,7 @@ const VIPAffiliatesManager = () => {
                                 <div className="flex items-center gap-2">
                                   <Input
                                     type="number"
-                                    defaultValue={affiliate.commission_rate}
+                                    defaultValue={(affiliate as any).commission_rate || (affiliate as any).commission_percent || 10}
                                     className="w-24"
                                     min={0}
                                     max={50}

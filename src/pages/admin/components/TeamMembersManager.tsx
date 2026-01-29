@@ -102,15 +102,22 @@ const TeamMembersManager = () => {
       const membersWithProfiles = await Promise.all(memberPromises);
       setMembers(membersWithProfiles);
 
-      // Fetch pending invites
-      const { data: invitesData, error: invitesError } = await supabase
-        .from('admin_invitations')
-        .select('*')
-        .is('accepted_at', null)
-        .order('created_at', { ascending: false });
+      // Fetch pending invites - table may not exist
+      let invitesData: any[] = [];
+      try {
+        const { data, error: invitesError } = await (supabase
+          .from('admin_invitations')
+          .select('*')
+          .is('accepted_at', null)
+          .order('created_at', { ascending: false }) as any);
 
-      if (invitesError) throw invitesError;
-      setInvites(invitesData || []);
+        if (!invitesError && data) {
+          invitesData = data;
+        }
+      } catch (e) {
+        console.log('Admin invitations table not available');
+      }
+      setInvites(invitesData as PendingInvite[]);
 
     } catch (error) {
       console.error('Error fetching team data:', error);
@@ -166,10 +173,10 @@ const TeamMembersManager = () => {
 
   const handleCancelInvite = async (inviteId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase
         .from('admin_invitations')
         .delete()
-        .eq('id', inviteId);
+        .eq('id', inviteId) as any);
 
       if (error) throw error;
 

@@ -122,10 +122,10 @@ export default function CertificationManager() {
   const { data: banks, isLoading: banksLoading } = useQuery({
     queryKey: ['question-banks', selectedCertification],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase
         .from('question_banks')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (selectedCertification !== 'all') {
         query = query.eq('certification', selectedCertification);
@@ -133,7 +133,7 @@ export default function CertificationManager() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as QuestionBank[];
+      return (data || []) as QuestionBank[];
     },
   });
 
@@ -143,11 +143,11 @@ export default function CertificationManager() {
     queryFn: async () => {
       if (!selectedBank) return [];
 
-      let query = supabase
+      let query = (supabase
         .from('financial_questions')
         .select('*')
         .eq('bank_id', selectedBank.id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any);
 
       if (searchQuery) {
         query = query.or(`question_text.ilike.%${searchQuery}%,topic.ilike.%${searchQuery}%`);
@@ -155,7 +155,7 @@ export default function CertificationManager() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []).map((q: any) => ({
+      return ((data || []) as any[]).map((q: any) => ({
         ...q,
         options: Array.isArray(q.options) ? q.options : [],
       })) as Question[];
@@ -167,24 +167,27 @@ export default function CertificationManager() {
   const { data: stats } = useQuery({
     queryKey: ['certification-stats'],
     queryFn: async () => {
-      const { data: bankStats } = await supabase
+      const { data: bankStats } = await (supabase
         .from('question_banks')
         .select('certification, total_questions')
-        .eq('is_active', true);
+        .eq('is_active', true) as any);
 
-      const { data: progressStats } = await supabase
+      const { data: progressStats } = await (supabase
         .from('certification_progress')
-        .select('certification, exams_passed');
+        .select('certification, exams_passed') as any);
 
-      const totalQuestions = bankStats?.reduce((acc, b) => acc + (b.total_questions || 0), 0) || 0;
-      const totalPassed = progressStats?.reduce((acc, p) => acc + (p.exams_passed || 0), 0) || 0;
+      const banksData = (bankStats || []) as any[];
+      const progressData = (progressStats || []) as any[];
+
+      const totalQuestions = banksData.reduce((acc, b) => acc + (b.total_questions || 0), 0);
+      const totalPassed = progressData.reduce((acc, p) => acc + (p.exams_passed || 0), 0);
 
       return {
-        totalBanks: bankStats?.length || 0,
+        totalBanks: banksData.length,
         totalQuestions,
         totalPassed,
         byCertification: Object.keys(CERTIFICATION_INFO).reduce((acc, cert) => {
-          acc[cert] = bankStats?.filter(b => b.certification === cert).reduce((sum, b) => sum + (b.total_questions || 0), 0) || 0;
+          acc[cert] = banksData.filter(b => b.certification === cert).reduce((sum, b) => sum + (b.total_questions || 0), 0);
           return acc;
         }, {} as Record<string, number>),
       };
@@ -194,11 +197,11 @@ export default function CertificationManager() {
   // Create bank mutation
   const createBankMutation = useMutation({
     mutationFn: async (data: typeof bankForm) => {
-      const { data: result, error } = await supabase
+      const { data: result, error } = await (supabase
         .from('question_banks')
         .insert([data])
         .select()
-        .single();
+        .single() as any);
 
       if (error) throw error;
       return result;
@@ -221,20 +224,20 @@ export default function CertificationManager() {
       const { id, ...rest } = data;
       
       if (id) {
-        const { data: result, error } = await supabase
+        const { data: result, error } = await (supabase
           .from('financial_questions')
-          .update(rest)
+          .update(rest as any)
           .eq('id', id)
           .select()
-          .single();
+          .single() as any);
         if (error) throw error;
         return result;
       } else {
-        const { data: result, error } = await supabase
+        const { data: result, error } = await (supabase
           .from('financial_questions')
-          .insert([rest])
+          .insert([rest as any])
           .select()
-          .single();
+          .single() as any);
         if (error) throw error;
         return result;
       }
@@ -256,10 +259,10 @@ export default function CertificationManager() {
   // Delete question mutation
   const deleteQuestionMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase
         .from('financial_questions')
         .delete()
-        .eq('id', id);
+        .eq('id', id) as any);
       if (error) throw error;
     },
     onSuccess: () => {

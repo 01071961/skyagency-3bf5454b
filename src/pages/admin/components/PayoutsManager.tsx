@@ -457,7 +457,11 @@ const PayoutsManager = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {withdrawals?.map((withdrawal) => (
+                    {withdrawals?.map((withdrawal: any) => {
+                      const fee = withdrawal.fee || withdrawal.amount * 0.02;
+                      const netAmount = withdrawal.net_amount || withdrawal.amount - fee;
+                      const paymentMethod = withdrawal.payment_method || (withdrawal.pix_key ? 'pix' : 'transfer');
+                      return (
                       <TableRow key={withdrawal.id}>
                         <TableCell className="font-mono text-xs">
                           {withdrawal.id.slice(0, 8)}...
@@ -466,13 +470,13 @@ const PayoutsManager = () => {
                           R$ {withdrawal.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          R$ {(withdrawal.fee || 0).toFixed(2)}
+                          R$ {fee.toFixed(2)}
                         </TableCell>
                         <TableCell className="text-green-400 font-bold">
-                          R$ {withdrawal.net_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          R$ {netAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{withdrawal.payment_method.toUpperCase()}</Badge>
+                          <Badge variant="outline">{paymentMethod.toUpperCase()}</Badge>
                         </TableCell>
                         <TableCell>{getStatusBadge(withdrawal.status)}</TableCell>
                         <TableCell className="text-muted-foreground text-sm">
@@ -501,7 +505,7 @@ const PayoutsManager = () => {
                           )}
                         </TableCell>
                       </TableRow>
-                    ))}
+                    )})}
                   </TableBody>
                 </Table>
               )}

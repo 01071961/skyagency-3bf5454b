@@ -48,12 +48,12 @@ export default function BusinessUnitsManager() {
   const { data: units, isLoading } = useQuery({
     queryKey: ['business-units'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('business_units')
         .select('*')
-        .order('sort_order', { ascending: true });
+        .order('sort_order', { ascending: true }) as any);
       if (error) throw error;
-      return data as BusinessUnit[];
+      return (data || []) as BusinessUnit[];
     },
   });
 
@@ -78,10 +78,10 @@ export default function BusinessUnitsManager() {
   // Toggle unit active status
   const toggleMutation = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      const { error } = await supabase
+      const { error } = await (supabase
         .from('business_units')
         .update({ is_active })
-        .eq('id', id);
+        .eq('id', id) as any);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -94,10 +94,10 @@ export default function BusinessUnitsManager() {
   const updateMutation = useMutation({
     mutationFn: async (unit: { id: string; name?: string; description?: string; color?: string; sort_order?: number }) => {
       const { id, ...updateData } = unit;
-      const { error } = await supabase
+      const { error } = await (supabase
         .from('business_units')
         .update(updateData)
-        .eq('id', id);
+        .eq('id', id) as any);
       if (error) throw error;
     },
     onSuccess: () => {

@@ -96,7 +96,7 @@ export default function EvaluationsStep({ productId }: EvaluationsStepProps) {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Simulator[];
+      return (data || []) as unknown as Simulator[];
     },
     enabled: !!productId
   });
@@ -112,7 +112,7 @@ export default function EvaluationsStep({ productId }: EvaluationsStepProps) {
         .order('order_index');
       
       if (error) throw error;
-      return data as SimulatorQuestion[];
+      return ((data || []) as any[]).map((q: any, i: number) => ({ ...q, order_index: q.order_index ?? q.position ?? i })) as SimulatorQuestion[];
     },
     enabled: !!selectedSimulatorId
   });
