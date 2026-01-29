@@ -16,8 +16,8 @@ const Affiliates = () => {
   const benefits = [
     {
       icon: DollarSign,
-      title: "Comissões de 10-30%",
-      description: "Ganhe comissões vitalícias por cada venda. Bronze: 10%, Silver: 15%, Gold: 20%, Diamond: 25%, Platinum: 30%."
+      title: "Comissões de 10-20%",
+      description: "Ganhe comissões vitalícias por cada venda. Bronze: 10%, Silver: 12%, Gold: 15%, Diamond: 20%."
     },
     {
       icon: Zap,
@@ -42,16 +42,15 @@ const Affiliates = () => {
     {
       icon: Star,
       title: "Sistema de Tiers",
-      description: "Evolua de Bronze a Platinum baseado em pontos. Quanto mais você vende, maior sua comissão!"
+      description: "Evolua de Bronze a Diamond baseado em pontos. Quanto mais você vende, maior sua comissão!"
     },
   ];
 
   const tiers = [
     { name: 'Bronze', points: '0-499', commission: '10%', color: 'from-amber-600 to-amber-800' },
-    { name: 'Silver', points: '500-1999', commission: '15%', color: 'from-slate-400 to-slate-600' },
-    { name: 'Gold', points: '2000-4999', commission: '20%', color: 'from-yellow-400 to-yellow-600' },
-    { name: 'Diamond', points: '5000-9999', commission: '25%', color: 'from-cyan-400 to-blue-600' },
-    { name: 'Platinum', points: '10000+', commission: '30%', color: 'from-violet-400 to-purple-600' },
+    { name: 'Silver', points: '500-1999', commission: '12%', color: 'from-slate-400 to-slate-600' },
+    { name: 'Gold', points: '2000-9999', commission: '15%', color: 'from-yellow-400 to-yellow-600' },
+    { name: 'Diamond', points: '10000+', commission: '20%', color: 'from-cyan-400 to-blue-600' },
   ];
 
   const steps = [
@@ -110,7 +109,7 @@ const Affiliates = () => {
             </h1>
             
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-              Cadastro gratuito com aprovação automática. Evolua de Bronze a Platinum 
+              Cadastro gratuito com aprovação automática. Evolua de Bronze a Diamond 
               e ganhe mais a cada indicação convertida. Bônus de +5% após 10 indicações/mês!
             </p>
 
@@ -171,7 +170,7 @@ const Affiliates = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
             {tiers.map((tier, i) => (
               <motion.div
                 key={tier.name}

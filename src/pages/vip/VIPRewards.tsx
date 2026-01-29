@@ -34,7 +34,6 @@ const tierColors: Record<string, string> = {
   silver: 'border-slate-400',
   gold: 'border-yellow-400',
   diamond: 'border-cyan-400',
-  platinum: 'border-violet-400',
 };
 
 const tierIcons: Record<string, React.ReactNode> = {
@@ -42,7 +41,6 @@ const tierIcons: Record<string, React.ReactNode> = {
   silver: <Star className="h-4 w-4" />,
   gold: <Crown className="h-4 w-4" />,
   diamond: <Diamond className="h-4 w-4" />,
-  platinum: <Diamond className="h-4 w-4" />,
 };
 
 export default function VIPRewards() {
@@ -153,7 +151,7 @@ export default function VIPRewards() {
   };
 
   const canRedeem = (reward: Reward) => {
-    const tierOrder = ['bronze', 'silver', 'gold', 'diamond', 'platinum'];
+    const tierOrder = ['bronze', 'silver', 'gold', 'diamond'];
     const userTierIndex = tierOrder.indexOf(userTier);
     const rewardTierIndex = tierOrder.indexOf(reward.tier_required);
     
@@ -200,7 +198,7 @@ export default function VIPRewards() {
             {rewards.map((reward, index) => {
               const available = canRedeem(reward);
               const tierLocked = (() => {
-                const tierOrder = ['bronze', 'silver', 'gold', 'diamond', 'platinum'];
+                const tierOrder = ['bronze', 'silver', 'gold', 'diamond'];
                 return tierOrder.indexOf(userTier) < tierOrder.indexOf(reward.tier_required);
               })();
 

@@ -68,8 +68,7 @@ export default function GamificationManager() {
         bronze: pointsRes.data?.filter(p => p.tier === 'bronze').length || 0,
         silver: pointsRes.data?.filter(p => p.tier === 'silver').length || 0,
         gold: pointsRes.data?.filter(p => p.tier === 'gold').length || 0,
-        platinum: pointsRes.data?.filter(p => p.tier === 'platinum').length || 0,
-        diamond: pointsRes.data?.filter(p => p.tier === 'diamond').length || 0
+        diamond: pointsRes.data?.filter(p => p.tier === 'diamond').length || 0,
       };
 
       return { totalPoints, totalEarned, pendingRedemptions, completedRedemptions, totalBadges, tierCounts };
@@ -230,8 +229,7 @@ export default function GamificationManager() {
       bronze: 'bg-amber-600/20 text-amber-400',
       silver: 'bg-slate-400/20 text-slate-300',
       gold: 'bg-yellow-500/20 text-yellow-400',
-      platinum: 'bg-cyan-400/20 text-cyan-300',
-      diamond: 'bg-purple-500/20 text-purple-400'
+      diamond: 'bg-purple-500/20 text-purple-400',
     };
     return <Badge className={colors[tier] || 'bg-muted'}>{tier}</Badge>;
   };
@@ -355,7 +353,6 @@ export default function GamificationManager() {
                       <SelectItem value="bronze">Bronze</SelectItem>
                       <SelectItem value="silver">Prata</SelectItem>
                       <SelectItem value="gold">Ouro</SelectItem>
-                      <SelectItem value="platinum">Platina</SelectItem>
                       <SelectItem value="diamond">Diamante</SelectItem>
                     </SelectContent>
                   </Select>

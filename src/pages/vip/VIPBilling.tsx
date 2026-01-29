@@ -47,14 +47,14 @@ const PLANS: Plan[] = [
     ]
   },
   {
-    id: 'platinum',
-    name: 'Platina',
-    tier: 'platinum',
+    id: 'diamond',
+    name: 'Diamante',
+    tier: 'diamond',
     price: 197,
     period: 'mês',
-    priceId: 'price_platinum_monthly', // Configure no Stripe Dashboard
+    priceId: 'price_diamond_monthly', // Configure no Stripe Dashboard
     icon: Star,
-    gradient: 'from-purple-500 to-pink-600',
+    gradient: 'from-cyan-500 to-blue-600',
     popular: true,
     features: [
       'Tudo do Ouro +',

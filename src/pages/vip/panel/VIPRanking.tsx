@@ -18,7 +18,6 @@ const tierColors: Record<string, string> = {
   silver: 'text-slate-400',
   gold: 'text-yellow-500',
   diamond: 'text-cyan-400',
-  platinum: 'text-violet-400'
 };
 
 const tierIcons: Record<string, any> = {
@@ -26,7 +25,6 @@ const tierIcons: Record<string, any> = {
   silver: Star,
   gold: Crown,
   diamond: Diamond,
-  platinum: Diamond
 };
 
 interface RankingEntry {

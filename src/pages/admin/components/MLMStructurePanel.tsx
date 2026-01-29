@@ -149,7 +149,6 @@ export default function MLMStructurePanel() {
       silver: affiliates?.filter(a => a.tier === 'silver').length || 0,
       gold: affiliates?.filter(a => a.tier === 'gold').length || 0,
       diamond: affiliates?.filter(a => a.tier === 'diamond').length || 0,
-      platinum: affiliates?.filter(a => a.tier === 'platinum').length || 0,
     }
   };
 

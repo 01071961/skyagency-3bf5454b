@@ -400,9 +400,8 @@ const MemberProfile = () => {
   const tierProgress = {
     bronze: { min: 0, max: 500, next: 'silver' },
     silver: { min: 500, max: 2000, next: 'gold' },
-    gold: { min: 2000, max: 5000, next: 'platinum' },
-    platinum: { min: 5000, max: 15000, next: 'diamond' },
-    diamond: { min: 15000, max: 999999, next: null },
+    gold: { min: 2000, max: 10000, next: 'diamond' },
+    diamond: { min: 10000, max: 999999, next: null },
   };
 
   const currentProgress = tierProgress[tierInfo.tier as keyof typeof tierProgress] || tierProgress.bronze;
