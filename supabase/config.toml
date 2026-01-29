@@ -3,6 +3,12 @@ project_id = "pfqhspnyejzohxwaqnyb"
 [functions.admin-ai-assistant]
 verify_jwt = true
 
+[functions.admin-create-user]
+verify_jwt = false
+
+[functions.admin-update-password]
+verify_jwt = false
+
 [functions.affiliate-actions]
 verify_jwt = false
 
