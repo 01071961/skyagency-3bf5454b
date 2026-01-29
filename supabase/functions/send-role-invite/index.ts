@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 interface InviteRequest {
@@ -23,51 +23,91 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error("Supabase credentials not configured");
+    console.log("Starting send-role-invite function");
+    console.log("RESEND_API_KEY exists:", !!RESEND_API_KEY);
+    console.log("SUPABASE_URL exists:", !!SUPABASE_URL);
+    console.log("SUPABASE_SERVICE_ROLE_KEY exists:", !!SUPABASE_SERVICE_ROLE_KEY);
 
+    if (!RESEND_API_KEY) {
+      console.error("RESEND_API_KEY not configured");
+      throw new Error("RESEND_API_KEY não configurado. Configure a chave em Edge Functions > Secrets.");
+    }
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      console.error("Supabase credentials not configured");
+      throw new Error("Credenciais Supabase não configuradas");
+    }
+
+    // Create Supabase admin client
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { email, name, role, inviterName }: InviteRequest = await req.json();
+    console.log("Request data:", { email, name, role, inviterName });
 
     if (!email || !name || !role) {
-      throw new Error("Email, name and role are required");
+      throw new Error("Email, nome e role são obrigatórios");
     }
 
     // Generate secure token
     const token = crypto.randomUUID() + '-' + crypto.randomUUID();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-    // Get current user from auth header
+    // Get current user from auth header (optional - for tracking who invited)
     const authHeader = req.headers.get("Authorization");
     let invitedBy = null;
     if (authHeader) {
-      const token = authHeader.replace("Bearer ", "");
-      const { data: { user } } = await supabase.auth.getUser(token);
+      const authToken = authHeader.replace("Bearer ", "");
+      const { data: { user } } = await supabase.auth.getUser(authToken);
       invitedBy = user?.id;
+      console.log("Invited by user:", invitedBy);
     }
 
-    // Store invitation in database
-    const { error: insertError } = await supabase
+    // Check for existing invitation
+    const { data: existingInvite, error: fetchError } = await supabase
       .from('admin_invitations')
-      .insert({
-        email: email.toLowerCase().trim(),
-        role,
-        token,
-        expires_at: expiresAt.toISOString(),
-        invited_by: invitedBy,
-        inviter_name: inviterName || 'SKY BRASIL'
-      });
+      .select('*')
+      .eq('email', email.toLowerCase().trim())
+      .eq('role', role)
+      .is('accepted_at', null)
+      .maybeSingle();
 
-    if (insertError) {
-      if (insertError.code === '23505') {
-        throw new Error("Já existe um convite pendente para este e-mail");
+    let inviteToken = token;
+
+    if (existingInvite) {
+      console.log("Found existing invite, will resend email");
+      inviteToken = existingInvite.token;
+      // Update the expiration date
+      const { error: updateError } = await supabase
+        .from('admin_invitations')
+        .update({
+          expires_at: expiresAt.toISOString(),
+          inviter_name: inviterName || 'SKY BRASIL'
+        })
+        .eq('id', existingInvite.id);
+      
+      if (updateError) {
+        console.error("Error updating invite:", updateError);
       }
-      throw insertError;
+    } else {
+      // Store new invitation in database
+      const { error: insertError } = await supabase
+        .from('admin_invitations')
+        .insert({
+          email: email.toLowerCase().trim(),
+          role,
+          token,
+          expires_at: expiresAt.toISOString(),
+          invited_by: invitedBy,
+          inviter_name: inviterName || 'SKY BRASIL'
+        });
+
+      if (insertError) {
+        console.error("Error inserting invite:", insertError);
+        throw insertError;
+      }
     }
 
     // Magic link URL
-    const magicLinkUrl = `https://skystreamer.online/auth?invite=${token}`;
+    const magicLinkUrl = `https://skystreamer.online/auth?invite=${inviteToken}`;
     
     const roleLabels: Record<string, string> = {
       editor: 'Editor',
@@ -146,21 +186,47 @@ serve(async (req) => {
 </html>
     `;
 
-    const res = await fetch("https://api.resend.com/emails", {
+    // Try with verified domain first, fallback to Resend test domain
+    let fromEmail = "SKY BRASIL <noreply@skystreamer.online>";
+    
+    console.log("Sending email via Resend...");
+    let res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "SKY BRASIL <noreply@skystreamer.online>",
+        from: fromEmail,
         to: [email],
         subject: `SKY BRASIL - Convite para ${roleLabels[role]}`,
         html: htmlContent,
       }),
     });
 
-    const result = await res.json();
+    let result = await res.json();
+    
+    // If domain not verified, try with Resend test domain
+    if (!res.ok && result.message?.includes('not verified')) {
+      console.log("Domain not verified, using Resend test domain...");
+      fromEmail = "SKY BRASIL <onboarding@resend.dev>";
+      
+      res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: fromEmail,
+          to: [email],
+          subject: `SKY BRASIL - Convite para ${roleLabels[role]}`,
+          html: htmlContent,
+        }),
+      });
+      
+      result = await res.json();
+    }
 
     if (!res.ok) {
       console.error("Resend error:", result);
