@@ -89,27 +89,42 @@ export const OnboardingWizard = () => {
     if (!user?.id) return;
 
     try {
-      const { data: progress } = await supabase
+      // Use maybeSingle() to avoid error when no record exists
+      const { data: progress, error } = await supabase
         .from('onboarding_progress')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
+      if (error) {
+        console.error('Error fetching onboarding status:', error);
+        return;
+      }
+
+      // No record exists - this is a first-time user
       if (!progress) {
         setIsOpen(true);
         // Create initial onboarding record
-        await supabase.from('onboarding_progress').insert({
+        const { error: insertError } = await supabase.from('onboarding_progress').insert({
           user_id: user.id,
           current_step: 1,
-          completed_steps: []
+          completed_steps: [],
+          is_completed: false
         });
-      } else if (!progress.is_completed) {
+        
+        if (insertError) {
+          console.error('Error creating onboarding record:', insertError);
+        }
+      } 
+      // Record exists but not completed - resume onboarding
+      else if (progress.is_completed === false && !progress.skipped) {
         setIsOpen(true);
         setCurrentStep(progress.current_step || 1);
         if (progress.data) {
           setData(prev => ({ ...prev, ...(progress.data as Partial<OnboardingData>) }));
         }
       }
+      // If is_completed is true or skipped is true, do nothing (don't show wizard)
     } catch (error) {
       console.error('Error checking onboarding status:', error);
     }
@@ -169,8 +184,23 @@ export const OnboardingWizard = () => {
   };
 
   const handleSkip = async () => {
-    await updateProgress(STEPS.length, true);
-    setIsOpen(false);
+    if (!user?.id) return;
+    
+    try {
+      await supabase
+        .from('onboarding_progress')
+        .update({
+          is_completed: true,
+          skipped: true,
+          completed_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+      
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error skipping onboarding:', error);
+      setIsOpen(false);
+    }
   };
 
   const progress = (currentStep / STEPS.length) * 100;
