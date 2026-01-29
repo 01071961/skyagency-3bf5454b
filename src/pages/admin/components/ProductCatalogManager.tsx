@@ -49,15 +49,15 @@ export default function ProductCatalogManager() {
         .order('created_at', { ascending: false });
 
       if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter as 'draft' | 'published' | 'archived');
+        query = query.eq('status', statusFilter as any);
       }
       if (typeFilter !== 'all') {
-        query = query.eq('product_type', typeFilter as 'course' | 'ebook' | 'mentoring' | 'live_event' | 'files' | 'combo');
+        query = query.eq('product_type', typeFilter as any);
       }
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data as any[];
     },
     refetchOnWindowFocus: !showWizard,
     staleTime: showWizard ? Infinity : 30000,
@@ -68,16 +68,19 @@ export default function ProductCatalogManager() {
     queryKey: ['product-stats'],
     queryFn: async () => {
       const [productsRes, ordersRes] = await Promise.all([
-        supabase.from('products').select('status, price, affiliate_enabled'),
-        supabase.from('order_items').select('price, product_id')
+        supabase.from('products').select('status, price, commission_percent, affiliate_free'),
+        supabase.from('order_items').select('unit_price, product_id')
       ]);
 
-      const totalProducts = productsRes.data?.length || 0;
-      const published = productsRes.data?.filter(p => p.status === 'published').length || 0;
-      const draft = productsRes.data?.filter(p => p.status === 'draft').length || 0;
-      const affiliateEnabled = productsRes.data?.filter(p => p.affiliate_enabled).length || 0;
-      const totalRevenue = ordersRes.data?.reduce((sum, o) => sum + Number(o.price), 0) || 0;
-      const totalSales = ordersRes.data?.length || 0;
+      const productsData = (productsRes.data || []) as any[];
+      const ordersData = (ordersRes.data || []) as any[];
+
+      const totalProducts = productsData.length;
+      const published = productsData.filter(p => p.status === 'published').length;
+      const draft = productsData.filter(p => p.status === 'draft').length;
+      const affiliateEnabled = productsData.filter(p => p.commission_percent > 0 || p.affiliate_free).length;
+      const totalRevenue = ordersData.reduce((sum, o) => sum + Number(o.unit_price || 0), 0);
+      const totalSales = ordersData.length;
 
       return { totalProducts, published, draft, affiliateEnabled, totalRevenue, totalSales };
     },
@@ -456,9 +459,9 @@ export default function ProductCatalogManager() {
                         <div className="flex flex-wrap gap-1.5 mb-2">
                           {getTypeBadge(product.product_type)}
                           {getStatusBadge(product.status)}
-                          {product.affiliate_enabled && (
+                          {(product.commission_percent > 0 || product.affiliate_free) && (
                             <Badge className="bg-cyan-500/20 text-cyan-400 text-xs">
-                              {product.affiliate_commission_rate || 50}%
+                              {product.commission_percent || 50}%
                             </Badge>
                           )}
                         </div>
@@ -533,9 +536,9 @@ export default function ProductCatalogManager() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            {product.affiliate_enabled ? (
+                            {(product.commission_percent > 0 || product.affiliate_free) ? (
                               <Badge className="bg-cyan-500/20 text-cyan-400">
-                                {product.affiliate_commission_rate || 50}%
+                                {product.commission_percent || 50}%
                               </Badge>
                             ) : (
                               <Badge variant="outline" className="text-muted-foreground">Off</Badge>

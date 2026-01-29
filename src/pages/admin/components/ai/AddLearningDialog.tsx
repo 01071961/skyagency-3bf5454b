@@ -56,15 +56,15 @@ export function AddLearningDialog({ onLearningAdded, trigger, initialData }: Add
         .map(k => k.trim())
         .filter(Boolean);
 
-      const { error } = await supabase.from('ai_learnings').insert({
+      const { error } = await (supabase.from('ai_learnings').insert({
         pattern: formData.pattern.trim(),
         category: formData.category,
-        keywords: keywordsArray.length > 0 ? keywordsArray : null,
-        response_template: formData.response_template.trim() || null,
+        response: formData.response_template.trim() || formData.pattern.trim(),
         is_active: formData.is_active,
-        success_score: 0,
-        fail_score: 0,
-      });
+        confidence: 0.5,
+        uses_count: 0,
+        success_rate: 0,
+      } as any) as any);
 
       if (error) throw error;
 

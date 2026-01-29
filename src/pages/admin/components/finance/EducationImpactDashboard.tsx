@@ -45,28 +45,32 @@ export default function EducationImpactDashboard() {
     queryKey: ['education-overview'],
     queryFn: async () => {
       // Aggregate data from various tables
-      const { data: progressData } = await supabase
+      const { data: progressData } = await (supabase
         .from('certification_progress')
-        .select('certification, exams_passed, exams_completed, average_score, total_study_hours');
+        .select('certification, exams_passed, exams_completed, average_score, total_study_hours') as any);
 
       const { data: attemptsData } = await supabase
         .from('exam_attempts')
         .select('passed, score')
         .eq('status', 'completed');
 
-      const { data: partnersData } = await supabase
+      const { data: partnersData } = await (supabase
         .from('b2b_partners')
         .select('status, enrolled_employees')
-        .eq('status', 'active');
+        .eq('status', 'active') as any);
 
-      const totalStudents = progressData?.length || 0;
-      const totalExams = attemptsData?.length || 0;
-      const passedExams = attemptsData?.filter(a => a.passed).length || 0;
-      const avgScore = attemptsData?.length 
-        ? (attemptsData.reduce((sum, a) => sum + (a.score || 0), 0) / attemptsData.length) 
+      const pData = (progressData || []) as any[];
+      const aData = (attemptsData || []) as any[];
+      const partData = (partnersData || []) as any[];
+
+      const totalStudents = pData.length;
+      const totalExams = aData.length;
+      const passedExams = aData.filter(a => a.passed).length;
+      const avgScore = aData.length 
+        ? (aData.reduce((sum, a) => sum + (a.score || 0), 0) / aData.length) 
         : 0;
-      const totalStudyHours = progressData?.reduce((sum, p) => sum + (p.total_study_hours || 0), 0) || 0;
-      const b2bStudents = partnersData?.reduce((sum, p) => sum + (p.enrolled_employees || 0), 0) || 0;
+      const totalStudyHours = pData.reduce((sum, p) => sum + (p.total_study_hours || 0), 0);
+      const b2bStudents = partData.reduce((sum, p) => sum + (p.enrolled_employees || 0), 0);
 
       return {
         totalStudents,
@@ -86,14 +90,15 @@ export default function EducationImpactDashboard() {
   const { data: certStats } = useQuery({
     queryKey: ['certification-breakdown'],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data } = await (supabase
         .from('certification_progress')
-        .select('certification, exams_completed, exams_passed, average_score');
+        .select('certification, exams_completed, exams_passed, average_score') as any);
 
       // Aggregate by certification
       const stats: Record<string, CertificationStats> = {};
+      const rows = (data || []) as any[];
       
-      data?.forEach(row => {
+      rows.forEach(row => {
         const cert = row.certification;
         if (!stats[cert]) {
           stats[cert] = {

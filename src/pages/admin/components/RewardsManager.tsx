@@ -424,11 +424,11 @@ const RewardsManager = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {rewards?.map((reward) => (
+                {rewards?.map((reward: any) => (
                   <TableRow key={reward.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        {getTypeIcon(reward.type)}
+                        {getTypeIcon(reward.type || 'product')}
                         <div>
                           <p className="font-medium">{reward.name}</p>
                           <p className="text-xs text-muted-foreground truncate max-w-[200px]">
@@ -438,29 +438,29 @@ const RewardsManager = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{getTypeLabel(reward.type)}</Badge>
+                      <Badge variant="outline">{getTypeLabel(reward.type || 'product')}</Badge>
                     </TableCell>
                     <TableCell className="font-bold text-primary">
-                      {reward.points_required.toLocaleString()}
+                      {(reward.points_cost || reward.points_required || 0).toLocaleString()}
                     </TableCell>
                     <TableCell>
                       {reward.type === 'cash' && (
-                        <span className="text-green-400">R$ {reward.cash_value?.toFixed(2)}</span>
+                        <span className="text-green-400">R$ {(reward.cash_value || 0).toFixed(2)}</span>
                       )}
                       {reward.type === 'discount' && (
-                        <span className="text-blue-400">{reward.discount_percent}% OFF</span>
+                        <span className="text-blue-400">{reward.discount_percent || 0}% OFF</span>
                       )}
-                      {(reward.type === 'badge' || reward.type === 'feature') && (
+                      {(!reward.type || reward.type === 'badge' || reward.type === 'feature' || reward.type === 'product') && (
                         <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
                     <TableCell>
                       <Badge className={getTierColor(reward.tier_required || 'bronze')}>
-                        {reward.tier_required?.toUpperCase() || 'BRONZE'}
+                        {(reward.tier_required || 'bronze').toUpperCase()}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {reward.stock !== null ? reward.stock : '∞'}
+                      {(reward.quantity_available ?? reward.stock) !== null ? (reward.quantity_available ?? reward.stock) : '∞'}
                     </TableCell>
                     <TableCell>
                       <Switch

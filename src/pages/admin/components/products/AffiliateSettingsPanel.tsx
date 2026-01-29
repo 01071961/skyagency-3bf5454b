@@ -101,7 +101,7 @@ export default function AffiliateSettingsPanel({ productId }: AffiliateSettingsP
         .eq('product_id', productId)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as Material[];
+      return (data || []) as unknown as Material[];
     }
   });
 
@@ -139,14 +139,15 @@ export default function AffiliateSettingsPanel({ productId }: AffiliateSettingsP
 
   useEffect(() => {
     if (product) {
-      // Parse affiliate_free_tiers - can be array or JSON string
+      // Parse affiliate_free_tiers - can be array, JSON string, or undefined
       let tiers: string[] = [];
-      if (product.affiliate_free_tiers) {
-        if (Array.isArray(product.affiliate_free_tiers)) {
-          tiers = product.affiliate_free_tiers;
-        } else if (typeof product.affiliate_free_tiers === 'string') {
+      const afTiers = (product as any).affiliate_free_tiers;
+      if (afTiers) {
+        if (Array.isArray(afTiers)) {
+          tiers = afTiers;
+        } else if (typeof afTiers === 'string') {
           try {
-            tiers = JSON.parse(product.affiliate_free_tiers);
+            tiers = JSON.parse(afTiers);
           } catch {
             tiers = [];
           }
@@ -154,8 +155,8 @@ export default function AffiliateSettingsPanel({ productId }: AffiliateSettingsP
       }
       
       setSettings({
-        affiliate_enabled: product.affiliate_enabled ?? true,
-        affiliate_commission_rate: product.affiliate_commission_rate || 50,
+        affiliate_enabled: (product as any).affiliate_enabled ?? product.affiliate_free ?? true,
+        affiliate_commission_rate: (product as any).affiliate_commission_rate || product.commission_percent || 50,
         affiliate_free: product.affiliate_free ?? false,
         affiliate_free_tiers: tiers,
       });
@@ -199,16 +200,15 @@ export default function AffiliateSettingsPanel({ productId }: AffiliateSettingsP
           .eq('id', data.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase
           .from('affiliate_materials')
           .insert({
             product_id: productId,
-            type: data.type,
+            material_type: data.type,
             title: data.title,
-            content: data.content || null,
+            description: data.content || null,
             file_url: data.file_url || null,
-            dimensions: data.dimensions || null,
-          });
+          } as any) as any);
         if (error) throw error;
       }
     },

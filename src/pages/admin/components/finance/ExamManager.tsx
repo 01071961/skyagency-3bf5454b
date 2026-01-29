@@ -101,7 +101,7 @@ export default function ExamManager() {
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data as Exam[];
+      return (data || []) as unknown as Exam[];
     },
   });
 
@@ -127,19 +127,22 @@ export default function ExamManager() {
     queryFn: async () => {
       const { data: examData } = await supabase
         .from('financial_exams')
-        .select('status');
+        .select('is_active');
 
       const { data: attemptData } = await supabase
         .from('exam_attempts')
         .select('status, passed');
 
+      const examsData = (examData || []) as any[];
+      const attemptsData = (attemptData || []) as any[];
+
       return {
-        totalExams: examData?.length || 0,
-        publishedExams: examData?.filter(e => e.status === 'published').length || 0,
-        totalAttempts: attemptData?.length || 0,
-        passedAttempts: attemptData?.filter(a => a.passed).length || 0,
-        passRate: attemptData?.length 
-          ? ((attemptData.filter(a => a.passed).length / attemptData.length) * 100).toFixed(1)
+        totalExams: examsData.length,
+        publishedExams: examsData.filter(e => e.is_active).length,
+        totalAttempts: attemptsData.length,
+        passedAttempts: attemptsData.filter(a => a.passed).length,
+        passRate: attemptsData.length 
+          ? ((attemptsData.filter(a => a.passed).length / attemptsData.length) * 100).toFixed(1)
           : '0',
       };
     },
@@ -203,7 +206,7 @@ export default function ExamManager() {
     mutationFn: async ({ id, status }: { id: string; status: ExamStatus }) => {
       const { error } = await supabase
         .from('financial_exams')
-        .update({ status })
+        .update({ is_active: status === 'published' } as any)
         .eq('id', id);
       if (error) throw error;
     },

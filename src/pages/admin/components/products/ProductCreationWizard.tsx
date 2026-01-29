@@ -395,7 +395,7 @@ export default function ProductCreationWizard({ productId, onClose, onSuccess }:
         .from('products')
         .select('id, name, price, cover_image_url')
         .eq('status', 'published')
-        .neq('product_type', 'combo')
+        .neq('product_type', 'combo' as any)
         .order('name');
       if (error) throw error;
       return data;
@@ -449,7 +449,8 @@ export default function ProductCreationWizard({ productId, onClose, onSuccess }:
   // Populate form when editing
   useEffect(() => {
     if (existingProduct) {
-      const externalIntegrations = existingProduct.external_integrations as any || {};
+      const ep = existingProduct as any;
+      const externalIntegrations = ep.external_integrations || {};
       
       form.reset({
         name: existingProduct.name || '',
@@ -458,29 +459,29 @@ export default function ProductCreationWizard({ productId, onClose, onSuccess }:
         description: existingProduct.description || '',
         cover_image_url: existingProduct.cover_image_url || '',
         category_id: existingProduct.category_id || '',
-        language: existingProduct.language || 'pt-BR',
-        tags: (existingProduct as any).tags || [],
+        language: ep.language || 'pt-BR',
+        tags: ep.tags || [],
         product_type: (existingProduct.product_type as ProductType) || 'course',
-        pricing_type: existingProduct.pricing_type || 'one_time',
+        pricing_type: (existingProduct.pricing_type || 'one_time') as any,
         price: existingProduct.price || 0,
         original_price: existingProduct.original_price || null,
-        subscription_interval: existingProduct.subscription_interval || 'monthly',
+        subscription_interval: ep.subscription_interval || 'monthly',
         max_installments: existingProduct.max_installments || 12,
         guarantee_days: existingProduct.guarantee_days || 7,
         access_days: existingProduct.access_days || null,
-        sales_page_template: existingProduct.sales_page_template || 'classic',
-        sales_page_published: existingProduct.sales_page_published || false,
+        sales_page_template: ep.sales_page_template || 'classic',
+        sales_page_published: ep.sales_page_published || false,
         testimonials: Array.isArray(existingProduct.testimonials) 
           ? (existingProduct.testimonials as any[]).map(t => ({ ...t, id: t.id || generateId() }))
           : [],
         faq: Array.isArray(existingProduct.faq) 
           ? (existingProduct.faq as any[]).map(f => ({ ...f, id: f.id || generateId() }))
           : [],
-        affiliate_enabled: existingProduct.affiliate_enabled ?? true,
-        affiliate_commission_rate: existingProduct.affiliate_commission_rate || 50,
-        status: existingProduct.status || 'draft',
-        trailer_url: (existingProduct as any).trailer_url || '',
-        download_url: existingProduct.download_url || '',
+        affiliate_enabled: ep.affiliate_enabled ?? true,
+        affiliate_commission_rate: ep.affiliate_commission_rate || 50,
+        status: (existingProduct.status || 'draft') as any,
+        trailer_url: ep.trailer_url || '',
+        download_url: ep.download_url || '',
         // Type-specific fields from external_integrations
         ebook_files: externalIntegrations.ebook_files || [],
         preview_url: externalIntegrations.preview_url || '',
@@ -610,7 +611,7 @@ export default function ProductCreationWizard({ productId, onClose, onSuccess }:
       if (productId) {
         const { data: result, error } = await supabase
           .from('products')
-          .update(payload)
+          .update(payload as any)
           .eq('id', productId)
           .select()
           .single();
@@ -619,7 +620,7 @@ export default function ProductCreationWizard({ productId, onClose, onSuccess }:
       } else {
         const { data: result, error } = await supabase
           .from('products')
-          .insert(payload)
+          .insert(payload as any)
           .select()
           .single();
         if (error) throw error;

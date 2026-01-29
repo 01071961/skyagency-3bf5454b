@@ -85,44 +85,40 @@ export default function SubscriptionsManager() {
 
   const loadSubscriptions = async () => {
     try {
-      // Load Creator subscriptions with affiliate info
-      const { data: creatorData, error: creatorError } = await supabase
-        .from('creator_subscriptions')
-        .select(`
-          *,
-          affiliate:affiliate_id(
-            user_id, 
-            referral_code, 
-            tier, 
-            is_creator
-          )
-        `)
-        .order('created_at', { ascending: false });
-
-      if (creatorError) {
-        console.error('Error loading creator subscriptions:', creatorError);
+      // Load Creator subscriptions - table may not exist
+      let creatorWithProfiles: any[] = [];
+      try {
+        const { data: creatorData } = await (supabase
+          .from('creator_subscriptions')
+          .select('*')
+          .order('created_at', { ascending: false }) as any);
+        
+        if (creatorData) {
+          creatorWithProfiles = await Promise.all(
+            creatorData.map(async (sub: any) => {
+              if (sub.affiliate_id) {
+                const { data: affiliate } = await supabase
+                  .from('vip_affiliates')
+                  .select('user_id, referral_code, tier, is_creator')
+                  .eq('id', sub.affiliate_id)
+                  .single();
+                  
+                if (affiliate?.user_id) {
+                  const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('email, name')
+                    .eq('user_id', affiliate.user_id)
+                    .single();
+                  return { ...sub, affiliate: { ...affiliate, profiles: profile } };
+                }
+              }
+              return sub;
+            })
+          );
+        }
+      } catch (e) {
+        console.log('Creator subscriptions table not available');
       }
-
-      // Get profile info for creator subscriptions
-      const creatorWithProfiles = await Promise.all(
-        (creatorData || []).map(async (sub) => {
-          if (sub.affiliate?.user_id) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('email, name')
-              .eq('user_id', sub.affiliate.user_id)
-              .single();
-            return { 
-              ...sub, 
-              affiliate: { 
-                ...sub.affiliate, 
-                profiles: profile 
-              } 
-            };
-          }
-          return sub;
-        })
-      );
 
       // Load general subscriptions
       const { data: generalData, error: generalError } = await supabase
@@ -136,26 +132,31 @@ export default function SubscriptionsManager() {
 
       // Get profile info for general subscriptions
       const generalWithProfiles = await Promise.all(
-        (generalData || []).map(async (sub) => {
+        (generalData || []).map(async (sub: any) => {
           const { data: profile } = await supabase
             .from('profiles')
             .select('email, name')
             .eq('user_id', sub.user_id)
             .single();
-          return { ...sub, profile };
+          return { 
+            ...sub, 
+            profile,
+            product_id: sub.product_id || sub.plan_id,
+            gateway_subscription_id: sub.gateway_subscription_id || sub.stripe_subscription_id
+          };
         })
       );
 
       setCreatorSubs(creatorWithProfiles as CreatorSubscription[]);
-      setGeneralSubs(generalWithProfiles);
+      setGeneralSubs(generalWithProfiles as GeneralSubscription[]);
 
       // Calculate stats
-      const activeCreatorCount = (creatorData || []).filter(s => s.status === 'active').length;
-      const activeGeneralCount = (generalData || []).filter(s => s.status === 'active').length;
+      const activeCreatorCount = creatorWithProfiles.filter(s => s.status === 'active').length;
+      const activeGeneralCount = (generalData || []).filter((s: any) => s.status === 'active').length;
       const creatorMRR = activeCreatorCount * 97; // R$97/month
       
       setStats({
-        totalCreatorSubs: (creatorData || []).length,
+        totalCreatorSubs: creatorWithProfiles.length,
         activeCreatorSubs: activeCreatorCount,
         totalGeneralSubs: (generalData || []).length,
         activeGeneralSubs: activeGeneralCount,
