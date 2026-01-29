@@ -186,11 +186,13 @@ serve(async (req) => {
 </html>
     `;
 
-    // Try with verified domain first, fallback to Resend test domain
-    let fromEmail = "SKY BRASIL <noreply@skystreamer.online>";
+    // Use verified domain - skystreamer.online is verified
+    const fromEmail = "SKY BRASIL <noreply@skystreamer.online>";
     
-    console.log("Sending email via Resend...");
-    let res = await fetch("https://api.resend.com/emails", {
+    console.log("Sending email via Resend from:", fromEmail);
+    console.log("Sending to:", email);
+    
+    const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -204,29 +206,9 @@ serve(async (req) => {
       }),
     });
 
-    let result = await res.json();
-    
-    // If domain not verified, try with Resend test domain
-    if (!res.ok && result.message?.includes('not verified')) {
-      console.log("Domain not verified, using Resend test domain...");
-      fromEmail = "SKY BRASIL <onboarding@resend.dev>";
-      
-      res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: fromEmail,
-          to: [email],
-          subject: `SKY BRASIL - Convite para ${roleLabels[role]}`,
-          html: htmlContent,
-        }),
-      });
-      
-      result = await res.json();
-    }
+    const result = await res.json();
+    console.log("Resend response status:", res.status);
+    console.log("Resend response:", JSON.stringify(result));
 
     if (!res.ok) {
       console.error("Resend error:", result);
