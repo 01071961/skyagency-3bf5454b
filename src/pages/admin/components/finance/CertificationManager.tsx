@@ -122,10 +122,10 @@ export default function CertificationManager() {
   const { data: banks, isLoading: banksLoading } = useQuery({
     queryKey: ['question-banks', selectedCertification],
     queryFn: async () => {
-      let query = (supabase
+      let query = (supabase as any)
         .from('question_banks')
         .select('*')
-        .order('created_at', { ascending: false }) as any);
+        .order('created_at', { ascending: false });
 
       if (selectedCertification !== 'all') {
         query = query.eq('certification', selectedCertification);
@@ -143,11 +143,11 @@ export default function CertificationManager() {
     queryFn: async () => {
       if (!selectedBank) return [];
 
-      let query = (supabase
+      let query = (supabase as any)
         .from('financial_questions')
         .select('*')
         .eq('bank_id', selectedBank.id)
-        .order('created_at', { ascending: false }) as any);
+        .order('created_at', { ascending: false });
 
       if (searchQuery) {
         query = query.or(`question_text.ilike.%${searchQuery}%,topic.ilike.%${searchQuery}%`);
@@ -167,14 +167,14 @@ export default function CertificationManager() {
   const { data: stats } = useQuery({
     queryKey: ['certification-stats'],
     queryFn: async () => {
-      const { data: bankStats } = await (supabase
+      const { data: bankStats } = await (supabase as any)
         .from('question_banks')
         .select('certification, total_questions')
-        .eq('is_active', true) as any);
+        .eq('is_active', true);
 
-      const { data: progressStats } = await (supabase
+      const { data: progressStats } = await (supabase as any)
         .from('certification_progress')
-        .select('certification, exams_passed') as any);
+        .select('certification, exams_passed');
 
       const banksData = (bankStats || []) as any[];
       const progressData = (progressStats || []) as any[];
@@ -197,11 +197,11 @@ export default function CertificationManager() {
   // Create bank mutation
   const createBankMutation = useMutation({
     mutationFn: async (data: typeof bankForm) => {
-      const { data: result, error } = await (supabase
+      const { data: result, error } = await (supabase as any)
         .from('question_banks')
         .insert([data])
         .select()
-        .single() as any);
+        .single();
 
       if (error) throw error;
       return result;
@@ -224,20 +224,20 @@ export default function CertificationManager() {
       const { id, ...rest } = data;
       
       if (id) {
-        const { data: result, error } = await (supabase
+        const { data: result, error } = await (supabase as any)
           .from('financial_questions')
-          .update(rest as any)
+          .update(rest)
           .eq('id', id)
           .select()
-          .single() as any);
+          .single();
         if (error) throw error;
         return result;
       } else {
-        const { data: result, error } = await (supabase
+        const { data: result, error } = await (supabase as any)
           .from('financial_questions')
-          .insert([rest as any])
+          .insert([rest])
           .select()
-          .single() as any);
+          .single();
         if (error) throw error;
         return result;
       }
@@ -259,10 +259,10 @@ export default function CertificationManager() {
   // Delete question mutation
   const deleteQuestionMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase
+      const { error } = await (supabase as any)
         .from('financial_questions')
         .delete()
-        .eq('id', id) as any);
+        .eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

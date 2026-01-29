@@ -358,16 +358,16 @@ const CourseViewer = () => {
       setCourse(courseData);
       
       // Fetch enrollment info
-      const { data: enrollmentData, error: enrollmentError } = await supabase
+      const { data: enrollmentData, error: enrollmentError } = await (supabase as any)
         .from('enrollments')
-        .select('enrolled_at, expires_at')
+        .select('created_at, expires_at')
         .eq('product_id', productId)
         .eq('user_id', user?.id)
         .eq('status', 'active')
         .maybeSingle();
       
       if (!enrollmentError && enrollmentData) {
-        setEnrollment(enrollmentData);
+        setEnrollment({ enrolled_at: enrollmentData.created_at, expires_at: enrollmentData.expires_at } as any);
       } else if (!enrollmentData) {
         // User doesn't have access to this course
         toast.error('Você não tem acesso a este curso');
@@ -376,7 +376,7 @@ const CourseViewer = () => {
       }
 
       // Fetch modules with lessons (including quiz fields and download_files)
-      const { data: modulesData, error: modulesError } = await supabase
+      const { data: modulesData, error: modulesError } = await (supabase as any)
         .from('product_modules')
         .select(`
           id,
@@ -392,8 +392,6 @@ const CourseViewer = () => {
             content_type,
             video_url,
             video_duration,
-            file_url,
-            download_files,
             is_free_preview,
             quiz_questions,
             quiz_passing_score,
@@ -406,13 +404,13 @@ const CourseViewer = () => {
 
       if (modulesError) throw modulesError;
 
-      const sortedModules = (modulesData || []).map(m => ({
+      const sortedModules = ((modulesData || []) as any[]).map((m: any) => ({
         ...m,
-        lessons: (m.lessons || []).map(l => ({
+        lessons: ((m.lessons || []) as any[]).map((l: any) => ({
           ...l,
           quiz_questions: Array.isArray(l.quiz_questions) ? l.quiz_questions as unknown as QuizQuestion[] : [],
           download_files: Array.isArray(l.download_files) ? l.download_files as unknown as DownloadFile[] : []
-        })).sort((a, b) => a.position - b.position)
+        })).sort((a: any, b: any) => a.position - b.position)
       })) as Module[];
 
       setModules(sortedModules);

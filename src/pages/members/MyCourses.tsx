@@ -53,26 +53,28 @@ const MyCourses = () => {
 
   const fetchEnrollments = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('enrollments')
         .select(`
           id,
           product_id,
           progress_percent,
-          enrolled_at,
+          created_at,
           expires_at,
           status,
-          last_accessed_at,
+          updated_at,
           product:products(name, cover_image_url, slug, description)
         `)
         .eq('user_id', user?.id)
         .eq('status', 'active')
-        .order('last_accessed_at', { ascending: false, nullsFirst: false });
+        .order('updated_at', { ascending: false, nullsFirst: false });
 
       if (error) throw error;
 
-      const enrollmentData = (data || []).map(e => ({
+      const enrollmentData = ((data || []) as any[]).map((e: any) => ({
         ...e,
+        enrolled_at: e.created_at,
+        last_accessed_at: e.updated_at,
         product: Array.isArray(e.product) ? e.product[0] : e.product
       })) as Enrollment[];
 

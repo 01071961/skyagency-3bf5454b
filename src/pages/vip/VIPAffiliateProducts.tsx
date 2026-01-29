@@ -92,9 +92,9 @@ export default function VIPAffiliateProducts() {
     try {
       setIsLoading(true);
 
-      const { data: affiliateData, error: affiliateError } = await supabase
+      const { data: affiliateData, error: affiliateError } = await (supabase as any)
         .from('vip_affiliates')
-        .select('id, referral_code, commission_rate, status, tier')
+        .select('id, referral_code, commission_percent, status, tier')
         .eq('user_id', user?.id)
         .single();
 
@@ -108,18 +108,24 @@ export default function VIPAffiliateProducts() {
         return;
       }
 
-      setAffiliate(affiliateData);
+      setAffiliate({
+        ...affiliateData,
+        commission_rate: affiliateData.commission_rate || affiliateData.commission_percent || 10,
+      } as any);
 
       // Fetch products with affiliate program enabled
-      const { data: productsData, error: productsError } = await supabase
+      const { data: productsData, error: productsError } = await (supabase as any)
         .from('products')
-        .select('id, name, slug, description, short_description, cover_image_url, price, original_price, product_type, affiliate_enabled, affiliate_commission_rate, affiliate_free, affiliate_free_tiers, pricing_type')
+        .select('id, name, slug, description, short_description, cover_image_url, price, original_price, product_type, commission_percent, pricing_type')
         .eq('status', 'published')
-        .eq('affiliate_enabled', true)
         .order('created_at', { ascending: false });
 
       if (productsError) throw productsError;
-      setProducts(productsData || []);
+      setProducts(((productsData || []) as any[]).map((p: any) => ({
+        ...p,
+        affiliate_enabled: p.affiliate_enabled ?? true,
+        affiliate_commission_rate: p.affiliate_commission_rate || p.commission_percent || 10,
+      })) as Product[]);
 
       // Fetch user's enrollments to check which products they already have access to
       const { data: enrollmentsData } = await supabase

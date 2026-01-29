@@ -36,13 +36,13 @@ export default function ExamsList() {
   const { data: exams, isLoading: examsLoading } = useQuery({
     queryKey: ['available-exams'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('financial_exams')
         .select('*')
-        .eq('status', 'published')
+        .eq('is_active', true)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      return (data || []) as any[];
     },
   });
 
@@ -51,13 +51,13 @@ export default function ExamsList() {
     queryKey: ['my-exam-attempts', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('exam_attempts')
-        .select('*, financial_exams(title, certification)')
+        .select('*, financial_exams(title, exam_type)')
         .eq('user_id', user.id)
         .order('started_at', { ascending: false });
       if (error) throw error;
-      return data;
+      return (data || []) as any[];
     },
     enabled: !!user,
   });
@@ -67,12 +67,12 @@ export default function ExamsList() {
     queryKey: ['my-certification-progress', user?.id],
     queryFn: async () => {
       if (!user) return [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('certification_progress')
         .select('*')
         .eq('user_id', user.id);
       if (error) throw error;
-      return data;
+      return (data || []) as any[];
     },
     enabled: !!user,
   });
@@ -116,11 +116,11 @@ export default function ExamsList() {
   };
 
   const getProgressForCertification = (cert: string) => {
-    return progress?.find(p => p.certification === cert);
+    return progress?.find((p: any) => p.certification === cert || p.exam_type === cert);
   };
 
   const getAttemptsForExam = (examId: string) => {
-    return myAttempts?.filter(a => a.exam_id === examId) || [];
+    return myAttempts?.filter((a: any) => a.exam_id === examId) || [];
   };
 
   const getBestScore = (examId: string) => {

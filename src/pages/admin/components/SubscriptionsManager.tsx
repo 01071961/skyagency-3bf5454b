@@ -88,10 +88,10 @@ export default function SubscriptionsManager() {
       // Load Creator subscriptions - table may not exist
       let creatorWithProfiles: any[] = [];
       try {
-        const { data: creatorData } = await (supabase
+        const { data: creatorData } = await (supabase as any)
           .from('creator_subscriptions')
           .select('*')
-          .order('created_at', { ascending: false }) as any);
+          .order('created_at', { ascending: false });
         
         if (creatorData) {
           creatorWithProfiles = await Promise.all(

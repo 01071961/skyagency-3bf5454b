@@ -128,31 +128,43 @@ const MemberProfile = () => {
 
     try {
       // Load experiences
-      const { data: expData } = await supabase
+      const { data: expData } = await (supabase as any)
         .from('profile_experiences')
         .select('*')
         .eq('user_id', user.id)
         .order('start_date', { ascending: false });
       
-      if (expData) setExperiences(expData);
+      if (expData) setExperiences(((expData || []) as any[]).map((e: any) => ({
+        ...e,
+        company_name: e.company_name || e.company || '',
+        position: e.position || e.title || '',
+      })) as Experience[]);
 
       // Load education
-      const { data: eduData } = await supabase
+      const { data: eduData } = await (supabase as any)
         .from('profile_education')
         .select('*')
         .eq('user_id', user.id)
         .order('start_date', { ascending: false });
       
-      if (eduData) setEducation(eduData);
+      if (eduData) setEducation(((eduData || []) as any[]).map((e: any) => ({
+        ...e,
+        institution_name: e.institution_name || e.school || '',
+      })) as Education[]);
 
       // Load skills
-      const { data: skillsData } = await supabase
+      const { data: skillsData } = await (supabase as any)
         .from('profile_skills')
         .select('*')
         .eq('user_id', user.id)
-        .order('endorsements_count', { ascending: false });
+        .order('created_at', { ascending: false });
       
-      if (skillsData) setSkills(skillsData);
+      if (skillsData) setSkills(((skillsData || []) as any[]).map((s: any) => ({
+        ...s,
+        skill_name: s.skill_name || s.name || '',
+        proficiency_level: s.proficiency_level || 'intermediate',
+        endorsements_count: s.endorsements_count || s.endorsement_count || 0,
+      })) as Skill[]);
     } catch (error) {
       console.error('Error loading extended profile:', error);
     }
