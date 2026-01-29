@@ -90,12 +90,12 @@ const TeamMembersManager = () => {
           .from('profiles')
           .select('email, name')
           .eq('user_id', role.user_id)
-          .single();
+          .maybeSingle();
         
         return {
           ...role,
           email: profile?.email || null,
-          name: profile?.name || null,
+          name: profile?.name || profile?.email?.split('@')[0] || null,
         } as TeamMember;
       });
 
