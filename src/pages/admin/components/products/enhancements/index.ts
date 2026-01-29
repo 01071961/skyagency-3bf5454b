@@ -3,6 +3,6 @@ export { AIProductAssistant } from './AIProductAssistant';
 export { SEOScoreIndicator } from './SEOScoreIndicator';
 export { ProfitCalculator } from './ProfitCalculator';
 export { InstallmentSimulator } from './InstallmentSimulator';
-export { AffiliateEarningsSimulator } from './AffiliateEarningsSimulator';
+export { AffiliateEarningsSimulator } from './SimpleEarningsSimulator';
 export { ReviewChecklist } from './ReviewChecklist';
 export { MultiDevicePreview } from './MultiDevicePreview';

@@ -1,5 +1,9 @@
 'use client';
 
+// Re-export the simple version for product pages (maintains backwards compatibility)
+export { SimpleEarningsSimulator as AffiliateEarningsSimulator } from './SimpleEarningsSimulator';
+
+// Also export enhanced version
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,18 +12,20 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Users, TrendingUp, DollarSign, Target, Award, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { EARNING_MILESTONES } from '@/lib/affiliate/badges';
+import { formatBRL } from '@/lib/affiliate/tierConfig';
 
-interface AffiliateEarningsSimulatorProps {
+interface SimpleEarningsSimulatorProps {
   price: number;
   commissionRate: number;
   className?: string;
 }
 
-export function AffiliateEarningsSimulator({
+export function SimpleEarningsSimulator({
   price,
   commissionRate,
   className
-}: AffiliateEarningsSimulatorProps) {
+}: SimpleEarningsSimulatorProps) {
   const [salesPerMonth, setSalesPerMonth] = useState(10);
 
   const calculations = useMemo(() => {
@@ -27,20 +33,11 @@ export function AffiliateEarningsSimulator({
     const monthlyEarnings = commissionPerSale * salesPerMonth;
     const yearlyEarnings = monthlyEarnings * 12;
     
-    // Milestones
-    const milestones = [
-      { name: 'Iniciante', sales: 5, icon: Target },
-      { name: 'Bronze', sales: 15, icon: Award },
-      { name: 'Prata', sales: 30, icon: Award },
-      { name: 'Ouro', sales: 50, icon: Sparkles },
-      { name: 'Diamante', sales: 100, icon: Sparkles },
-    ];
-    
-    const currentMilestone = milestones
+    const currentMilestone = EARNING_MILESTONES
       .filter(m => salesPerMonth >= m.sales)
-      .pop() || milestones[0];
+      .pop() || EARNING_MILESTONES[0];
     
-    const nextMilestone = milestones.find(m => m.sales > salesPerMonth);
+    const nextMilestone = EARNING_MILESTONES.find(m => m.sales > salesPerMonth);
     
     return {
       commissionPerSale,
@@ -51,13 +48,6 @@ export function AffiliateEarningsSimulator({
       salesToNext: nextMilestone ? nextMilestone.sales - salesPerMonth : 0
     };
   }, [price, commissionRate, salesPerMonth]);
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
-  };
 
   return (
     <Card className={cn("", className)}>
@@ -71,15 +61,13 @@ export function AffiliateEarningsSimulator({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Per Sale */}
         <div className="p-3 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20">
           <p className="text-xs text-muted-foreground mb-1">Comissão por venda</p>
           <p className="text-2xl font-bold text-primary">
-            {formatCurrency(calculations.commissionPerSale)}
+            {formatBRL(calculations.commissionPerSale)}
           </p>
         </div>
 
-        {/* Slider */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label className="text-xs">Vendas por mês</Label>
@@ -95,7 +83,6 @@ export function AffiliateEarningsSimulator({
           />
         </div>
 
-        {/* Earnings Grid */}
         <div className="grid grid-cols-2 gap-2">
           <motion.div
             className="p-3 rounded-lg bg-green-500/10 border border-green-500/20"
@@ -106,7 +93,7 @@ export function AffiliateEarningsSimulator({
               <DollarSign className="w-3 h-3" />
               Mensal
             </div>
-            <p className="text-lg font-bold">{formatCurrency(calculations.monthlyEarnings)}</p>
+            <p className="text-lg font-bold">{formatBRL(calculations.monthlyEarnings)}</p>
           </motion.div>
 
           <motion.div
@@ -119,15 +106,14 @@ export function AffiliateEarningsSimulator({
               <TrendingUp className="w-3 h-3" />
               Anual
             </div>
-            <p className="text-lg font-bold">{formatCurrency(calculations.yearlyEarnings)}</p>
+            <p className="text-lg font-bold">{formatBRL(calculations.yearlyEarnings)}</p>
           </motion.div>
         </div>
 
-        {/* Milestone */}
         <div className="pt-2 border-t">
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
-              <calculations.currentMilestone.icon className="w-4 h-4 text-yellow-500" />
+              <span className="text-lg">{calculations.currentMilestone.icon}</span>
               <span className="font-medium">Nível: {calculations.currentMilestone.name}</span>
             </div>
             {calculations.nextMilestone && (
