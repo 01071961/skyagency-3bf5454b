@@ -73,8 +73,10 @@ const contactRequestSchema = z.object({
   message: z.string()
     .min(1, 'Mensagem obrigatória')
     .max(2000, 'Mensagem deve ter no máximo 2000 caracteres')
-    .transform(sanitizeText),
-  source: z.enum(['contact', 'vip']),
+    .transform(sanitizeText)
+    .optional()
+    .default('Contato via formulário'),
+  source: z.enum(['contact', 'vip']).optional().default('contact'),
   channel: z.string()
     .max(100, 'Canal deve ter no máximo 100 caracteres')
     .optional()

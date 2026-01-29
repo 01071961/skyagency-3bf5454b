@@ -767,34 +767,58 @@ export type Database = {
       }
       chat_conversations: {
         Row: {
+          ai_confidence: number | null
+          assigned_admin_id: string | null
           created_at: string | null
+          current_mode: string | null
+          escalation_reason: string | null
           form_completed: boolean | null
           id: string
+          last_activity_at: string | null
           metadata: Json | null
+          rating: number | null
           status: string | null
+          transferred_at: string | null
           updated_at: string | null
           user_id: string | null
           visitor_id: string | null
+          visitor_name: string | null
         }
         Insert: {
+          ai_confidence?: number | null
+          assigned_admin_id?: string | null
           created_at?: string | null
+          current_mode?: string | null
+          escalation_reason?: string | null
           form_completed?: boolean | null
           id?: string
+          last_activity_at?: string | null
           metadata?: Json | null
+          rating?: number | null
           status?: string | null
+          transferred_at?: string | null
           updated_at?: string | null
           user_id?: string | null
           visitor_id?: string | null
+          visitor_name?: string | null
         }
         Update: {
+          ai_confidence?: number | null
+          assigned_admin_id?: string | null
           created_at?: string | null
+          current_mode?: string | null
+          escalation_reason?: string | null
           form_completed?: boolean | null
           id?: string
+          last_activity_at?: string | null
           metadata?: Json | null
+          rating?: number | null
           status?: string | null
+          transferred_at?: string | null
           updated_at?: string | null
           user_id?: string | null
           visitor_id?: string | null
+          visitor_name?: string | null
         }
         Relationships: []
       }
@@ -804,6 +828,7 @@ export type Database = {
           conversation_id: string
           created_at: string | null
           id: string
+          is_ai_response: boolean | null
           metadata: Json | null
           role: string
         }
@@ -812,6 +837,7 @@ export type Database = {
           conversation_id: string
           created_at?: string | null
           id?: string
+          is_ai_response?: boolean | null
           metadata?: Json | null
           role: string
         }
@@ -820,6 +846,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string | null
           id?: string
+          is_ai_response?: boolean | null
           metadata?: Json | null
           role?: string
         }
@@ -829,6 +856,124 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "chat_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string | null
+          reply_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          reply_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          reply_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_posts: {
+        Row: {
+          content: string | null
+          course_id: string | null
+          created_at: string | null
+          id: string
+          is_pinned: boolean | null
+          is_resolved: boolean | null
+          likes_count: number | null
+          media_urls: string[] | null
+          replies_count: number | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          is_resolved?: boolean | null
+          likes_count?: number | null
+          media_urls?: string[] | null
+          replies_count?: number | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          course_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          is_resolved?: boolean | null
+          likes_count?: number | null
+          media_urls?: string[] | null
+          replies_count?: number | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      community_replies: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_solution: boolean | null
+          likes_count: number | null
+          post_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_solution?: boolean | null
+          likes_count?: number | null
+          post_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_solution?: boolean | null
+          likes_count?: number | null
+          post_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
             referencedColumns: ["id"]
           },
         ]
@@ -1465,6 +1610,41 @@ export type Database = {
           },
         ]
       }
+      historico_modulos: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          module_id: string | null
+          score: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          module_id?: string | null
+          score?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          module_id?: string | null
+          score?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historico_modulos_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "product_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_progress: {
         Row: {
           completed: boolean | null
@@ -1608,6 +1788,7 @@ export type Database = {
           id: string
           is_read: boolean | null
           message: string | null
+          read_at: string | null
           title: string
           type: string | null
           user_id: string
@@ -1618,6 +1799,7 @@ export type Database = {
           id?: string
           is_read?: boolean | null
           message?: string | null
+          read_at?: string | null
           title: string
           type?: string | null
           user_id: string
@@ -1628,6 +1810,7 @@ export type Database = {
           id?: string
           is_read?: boolean | null
           message?: string | null
+          read_at?: string | null
           title?: string
           type?: string | null
           user_id?: string
@@ -1639,7 +1822,10 @@ export type Database = {
           completed: boolean | null
           completed_steps: number[] | null
           created_at: string | null
+          current_step: number | null
+          data: Json | null
           id: string
+          is_completed: boolean | null
           skipped: boolean | null
           step: number | null
           updated_at: string | null
@@ -1649,7 +1835,10 @@ export type Database = {
           completed?: boolean | null
           completed_steps?: number[] | null
           created_at?: string | null
+          current_step?: number | null
+          data?: Json | null
           id?: string
+          is_completed?: boolean | null
           skipped?: boolean | null
           step?: number | null
           updated_at?: string | null
@@ -1659,7 +1848,10 @@ export type Database = {
           completed?: boolean | null
           completed_steps?: number[] | null
           created_at?: string | null
+          current_step?: number | null
+          data?: Json | null
           id?: string
+          is_completed?: boolean | null
           skipped?: boolean | null
           step?: number | null
           updated_at?: string | null
@@ -1970,6 +2162,7 @@ export type Database = {
           position: number | null
           quiz_passing_score: number | null
           quiz_questions: Json | null
+          quiz_required: boolean | null
           updated_at: string | null
           video_duration: number | null
           video_url: string | null
@@ -1988,6 +2181,7 @@ export type Database = {
           position?: number | null
           quiz_passing_score?: number | null
           quiz_questions?: Json | null
+          quiz_required?: boolean | null
           updated_at?: string | null
           video_duration?: number | null
           video_url?: string | null
@@ -2006,6 +2200,7 @@ export type Database = {
           position?: number | null
           quiz_passing_score?: number | null
           quiz_questions?: Json | null
+          quiz_required?: boolean | null
           updated_at?: string | null
           video_duration?: number | null
           video_url?: string | null
@@ -2147,42 +2342,234 @@ export type Database = {
           },
         ]
       }
-      profiles: {
+      profile_edit_history: {
         Row: {
-          avatar_url: string | null
-          birth_date: string | null
-          cpf: string | null
-          created_at: string | null
-          email: string | null
-          full_name: string | null
+          changed_at: string | null
+          field_changed: string | null
           id: string
-          phone: string | null
+          new_value: string | null
+          old_value: string | null
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string | null
+          field_changed?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          user_id: string
+        }
+        Update: {
+          changed_at?: string | null
+          field_changed?: string | null
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profile_education: {
+        Row: {
+          created_at: string | null
+          degree: string | null
+          description: string | null
+          end_date: string | null
+          field_of_study: string | null
+          id: string
+          is_current: boolean | null
+          linkedin_id: string | null
+          school: string | null
+          start_date: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
-          avatar_url?: string | null
-          birth_date?: string | null
-          cpf?: string | null
           created_at?: string | null
-          email?: string | null
-          full_name?: string | null
+          degree?: string | null
+          description?: string | null
+          end_date?: string | null
+          field_of_study?: string | null
           id?: string
-          phone?: string | null
+          is_current?: boolean | null
+          linkedin_id?: string | null
+          school?: string | null
+          start_date?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
-          avatar_url?: string | null
-          birth_date?: string | null
-          cpf?: string | null
           created_at?: string | null
-          email?: string | null
-          full_name?: string | null
+          degree?: string | null
+          description?: string | null
+          end_date?: string | null
+          field_of_study?: string | null
           id?: string
-          phone?: string | null
+          is_current?: boolean | null
+          linkedin_id?: string | null
+          school?: string | null
+          start_date?: string | null
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      profile_experiences: {
+        Row: {
+          company: string | null
+          created_at: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          is_current: boolean | null
+          linkedin_id: string | null
+          location: string | null
+          start_date: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          linkedin_id?: string | null
+          location?: string | null
+          start_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          is_current?: boolean | null
+          linkedin_id?: string | null
+          location?: string | null
+          start_date?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profile_skills: {
+        Row: {
+          created_at: string | null
+          endorsement_count: number | null
+          id: string
+          linkedin_id: string | null
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          endorsement_count?: number | null
+          id?: string
+          linkedin_id?: string | null
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          endorsement_count?: number | null
+          id?: string
+          linkedin_id?: string | null
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          birth_date: string | null
+          cover_image_url: string | null
+          cpf: string | null
+          created_at: string | null
+          drive_connected: boolean | null
+          email: string | null
+          full_name: string | null
+          github_url: string | null
+          headline: string | null
+          id: string
+          instagram_url: string | null
+          linkedin_url: string | null
+          location: string | null
+          name: string | null
+          phone: string | null
+          plan: string | null
+          subscription_tier: string | null
+          tiktok_url: string | null
+          twitter_url: string | null
+          two_factor_enabled: boolean | null
+          updated_at: string | null
+          user_id: string
+          website_url: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          birth_date?: string | null
+          cover_image_url?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          drive_connected?: boolean | null
+          email?: string | null
+          full_name?: string | null
+          github_url?: string | null
+          headline?: string | null
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          name?: string | null
+          phone?: string | null
+          plan?: string | null
+          subscription_tier?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          two_factor_enabled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          website_url?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          birth_date?: string | null
+          cover_image_url?: string | null
+          cpf?: string | null
+          created_at?: string | null
+          drive_connected?: boolean | null
+          email?: string | null
+          full_name?: string | null
+          github_url?: string | null
+          headline?: string | null
+          id?: string
+          instagram_url?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          name?: string | null
+          phone?: string | null
+          plan?: string | null
+          subscription_tier?: string | null
+          tiktok_url?: string | null
+          twitter_url?: string | null
+          two_factor_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          website_url?: string | null
+          youtube_url?: string | null
         }
         Relationships: []
       }
@@ -2547,6 +2934,70 @@ export type Database = {
         }
         Relationships: []
       }
+      video_likes: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id: string
+          video_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id: string
+          video_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id?: string
+          video_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_likes_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_views: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id: string | null
+          video_id: string | null
+          viewer_ip: string | null
+          watched_seconds: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          video_id?: string | null
+          viewer_ip?: string | null
+          watched_seconds?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id?: string | null
+          video_id?: string | null
+          viewer_ip?: string | null
+          watched_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_views_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       videos: {
         Row: {
           category: string | null
@@ -2561,6 +3012,8 @@ export type Database = {
           live_ended_at: string | null
           live_started_at: string | null
           metadata: Json | null
+          status: string | null
+          storage_url: string | null
           tags: string[] | null
           thumbnail_url: string | null
           title: string
@@ -2582,6 +3035,8 @@ export type Database = {
           live_ended_at?: string | null
           live_started_at?: string | null
           metadata?: Json | null
+          status?: string | null
+          storage_url?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
           title: string
@@ -2603,6 +3058,8 @@ export type Database = {
           live_ended_at?: string | null
           live_started_at?: string | null
           metadata?: Json | null
+          status?: string | null
+          storage_url?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
           title?: string
@@ -2624,6 +3081,7 @@ export type Database = {
           level2_count: number | null
           pix_key: string | null
           referral_code: string
+          referral_count: number | null
           social_links: Json | null
           sponsor_id: string | null
           status: string | null
@@ -2645,6 +3103,7 @@ export type Database = {
           level2_count?: number | null
           pix_key?: string | null
           referral_code: string
+          referral_count?: number | null
           social_links?: Json | null
           sponsor_id?: string | null
           status?: string | null
@@ -2666,6 +3125,7 @@ export type Database = {
           level2_count?: number | null
           pix_key?: string | null
           referral_code?: string
+          referral_count?: number | null
           social_links?: Json | null
           sponsor_id?: string | null
           status?: string | null

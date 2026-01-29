@@ -209,7 +209,19 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, conversationId, visitorId, visitorName } = await req.json();
+    const body = await req.json();
+    const messages = body.messages || [];
+    const conversationId = body.conversationId;
+    const visitorId = body.visitorId;
+    const visitorName = body.visitorName;
+
+    // Validate messages array
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "Messages array is required and cannot be empty" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Rate limiting
     if (visitorId && !checkRateLimit(visitorId)) {
