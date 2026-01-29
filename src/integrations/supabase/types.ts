@@ -3345,6 +3345,7 @@ export type Database = {
           social_links: Json | null
           sponsor_id: string | null
           status: string | null
+          team_earnings: number | null
           tier: Database["public"]["Enums"]["affiliate_tier"] | null
           total_earnings: number | null
           total_referrals: number | null
@@ -3369,6 +3370,7 @@ export type Database = {
           social_links?: Json | null
           sponsor_id?: string | null
           status?: string | null
+          team_earnings?: number | null
           tier?: Database["public"]["Enums"]["affiliate_tier"] | null
           total_earnings?: number | null
           total_referrals?: number | null
@@ -3393,6 +3395,7 @@ export type Database = {
           social_links?: Json | null
           sponsor_id?: string | null
           status?: string | null
+          team_earnings?: number | null
           tier?: Database["public"]["Enums"]["affiliate_tier"] | null
           total_earnings?: number | null
           total_referrals?: number | null
