@@ -98,8 +98,7 @@ export const useAdminRole = () => {
         const { data, error: queryError } = await supabase
           .from('user_roles')
           .select('role')
-          .eq('user_id', user.id)
-          .maybeSingle();
+          .eq('user_id', user.id);
 
         clearTimeout(timeoutId);
 
@@ -126,9 +125,10 @@ export const useAdminRole = () => {
             hasCheckedRef.current = true;
           }
         } else {
-          // Check if user has any admin role
-          const hasAdminRole = !!data && ADMIN_ROLES.includes(data.role);
-          console.log('[useAdminRole] Role check result:', hasAdminRole ? data.role : 'none');
+          // Check if user has any admin role (data is now an array)
+          const userRoles = data?.map(r => r.role) || [];
+          const hasAdminRole = userRoles.some(role => ADMIN_ROLES.includes(role));
+          console.log('[useAdminRole] Role check result:', hasAdminRole ? userRoles.join(', ') : 'none');
           setIsAdmin(hasAdminRole);
           setCachedRole(user.id, hasAdminRole);
           setError(null);
