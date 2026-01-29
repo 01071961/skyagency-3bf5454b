@@ -330,7 +330,7 @@ const VIPAffiliatesManager = () => {
                         {getStatusLabel(affiliate.status || 'pending')}
                       </Badge>
                     </TableCell>
-                    <TableCell>{(affiliate as any).commission_rate || (affiliate as any).commission_percent || 10}%</TableCell>
+                    <TableCell>{getTierConfig(affiliate.tier).commissionRate}%</TableCell>
                     <TableCell className="text-green-400">
                       R$ {(affiliate.total_earnings || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                     </TableCell>
