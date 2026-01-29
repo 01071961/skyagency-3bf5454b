@@ -90,12 +90,15 @@ export default function GamificationManager() {
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData & { id?: string }) => {
-      // Map to existing schema fields
       const payload = {
         name: data.name,
         description: data.description,
-        points_cost: data.points_required,
-        quantity_available: data.stock,
+        type: data.type,
+        points_required: data.points_required,
+        tier_required: data.tier_required,
+        cash_value: data.cash_value,
+        discount_percent: data.discount_percent,
+        stock: data.stock,
         is_active: data.is_active,
       };
       if (data.id) {

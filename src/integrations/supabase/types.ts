@@ -2778,34 +2778,49 @@ export type Database = {
       }
       rewards: {
         Row: {
+          cash_value: number | null
           created_at: string | null
           description: string | null
+          discount_percent: number | null
           id: string
           image_url: string | null
           is_active: boolean | null
           name: string
-          points_cost: number
+          points_required: number
           quantity_available: number | null
+          stock: number | null
+          tier_required: string | null
+          type: string | null
         }
         Insert: {
+          cash_value?: number | null
           created_at?: string | null
           description?: string | null
+          discount_percent?: number | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           name: string
-          points_cost: number
+          points_required: number
           quantity_available?: number | null
+          stock?: number | null
+          tier_required?: string | null
+          type?: string | null
         }
         Update: {
+          cash_value?: number | null
           created_at?: string | null
           description?: string | null
+          discount_percent?: number | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           name?: string
-          points_cost?: number
+          points_required?: number
           quantity_available?: number | null
+          stock?: number | null
+          tier_required?: string | null
+          type?: string | null
         }
         Relationships: []
       }
