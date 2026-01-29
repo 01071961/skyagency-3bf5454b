@@ -21,9 +21,12 @@ import {
   Layers,
   ArrowUp,
   ArrowDown,
-  X
+  X,
+  Star,
+  Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { TIER_CONFIG as BASE_TIER_CONFIG, calculatePoints, calculateTierProgress, getTierConfig, normalizeTier, TierKey } from '@/lib/affiliate/tierConfig';
 
 interface Affiliate {
   id: string;
@@ -52,68 +55,36 @@ interface PlatformCommission {
   created_at: string;
 }
 
-// Requisitos mais rigorosos para tiers
-const TIER_CONFIG = {
+// Use centralized tier config with visual enhancements for the panel
+const TIER_VISUAL = {
   bronze: { 
-    label: 'Bronze', 
-    icon: '🥉', 
-    color: 'from-amber-600 to-amber-800',
-    bgColor: 'bg-amber-500/10',
-    textColor: 'text-amber-600',
-    rate: 10,
+    ...BASE_TIER_CONFIG.bronze,
     requirements: '0 indicações',
-    minReferrals: 0,
-    minSales: 0,
-    minPoints: 0
   },
   silver: { 
-    label: 'Prata', 
-    icon: '🥈', 
-    color: 'from-slate-400 to-slate-600',
-    bgColor: 'bg-slate-500/10',
-    textColor: 'text-slate-600',
-    rate: 12,
-    requirements: '5+ indicações, R$500+ vendas',
-    minReferrals: 5,
-    minSales: 500,
-    minPoints: 1000
+    ...BASE_TIER_CONFIG.silver,
+    requirements: '5+ indicações, R$500+ vendas, 500+ pts',
   },
   gold: { 
-    label: 'Ouro', 
-    icon: '🥇', 
-    color: 'from-yellow-400 to-yellow-600',
-    bgColor: 'bg-yellow-500/10',
-    textColor: 'text-yellow-600',
-    rate: 15,
-    requirements: '15+ indicações, R$2k+ vendas',
-    minReferrals: 15,
-    minSales: 2000,
-    minPoints: 5000
+    ...BASE_TIER_CONFIG.gold,
+    requirements: '15+ indicações, R$2k+ vendas, 2k+ pts',
   },
   diamond: { 
-    label: 'Diamante', 
-    icon: '💎', 
-    color: 'from-cyan-400 to-blue-600',
-    bgColor: 'bg-cyan-500/10',
-    textColor: 'text-cyan-600',
-    rate: 20,
-    requirements: '50+ indicações, R$10k+ vendas',
-    minReferrals: 50,
-    minSales: 10000,
-    minPoints: 20000
+    ...BASE_TIER_CONFIG.diamond,
+    requirements: '50+ indicações, R$10k+ vendas, 10k+ pts',
   },
-  platinum: { 
-    label: 'Platina', 
-    icon: '👑', 
-    color: 'from-violet-400 to-purple-600',
-    bgColor: 'bg-violet-500/10',
-    textColor: 'text-violet-600',
-    rate: 25,
-    requirements: '100+ indicações, R$50k+ vendas',
-    minReferrals: 100,
-    minSales: 50000,
-    minPoints: 50000
-  },
+};
+
+// Helper to calculate affiliate points
+const getAffiliatePoints = (directSales: number, downlineSales: number) => {
+  return calculatePoints(directSales, downlineSales);
+};
+
+// Get next tier progress using centralized function
+const getNextTierProgressData = (currentTier: string, points: number, referrals: number, sales: number) => {
+  const normalized = normalizeTier(currentTier);
+  const progress = calculateTierProgress(normalized, referrals, sales, points);
+  return progress;
 };
 
 export default function MLMStructurePanel() {
@@ -201,10 +172,10 @@ export default function MLMStructurePanel() {
   };
 
   const renderTierBadge = (tier: string) => {
-    const config = TIER_CONFIG[tier as keyof typeof TIER_CONFIG] || TIER_CONFIG.bronze;
+    const config = getTierConfig(tier);
     return (
       <Badge className={cn(config.bgColor, config.textColor, "border-0 text-xs")}>
-        {config.icon} {config.label}
+        {config.icon} {config.labelPT}
       </Badge>
     );
   };
@@ -295,23 +266,23 @@ export default function MLMStructurePanel() {
         </CardHeader>
         <CardContent>
           <ScrollArea className="w-full pb-3">
-            <div className="flex gap-3 min-w-max sm:grid sm:grid-cols-5 sm:min-w-0">
-              {Object.entries(TIER_CONFIG).map(([key, config]) => (
+            <div className="flex gap-3 min-w-max sm:grid sm:grid-cols-4 sm:min-w-0">
+              {Object.entries(TIER_VISUAL).map(([key, config]) => (
                 <div 
                   key={key} 
                   className={cn(
                     "p-3 sm:p-4 rounded-lg bg-gradient-to-br text-white text-center",
                     "min-w-[100px] sm:min-w-0",
-                    config.color
+                    config.gradient
                   )}
                 >
                   <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">{config.icon}</div>
-                  <div className="font-bold text-sm sm:text-base">{config.label}</div>
+                  <div className="font-bold text-sm sm:text-base">{config.labelPT}</div>
                   <div className="text-xl sm:text-2xl font-bold mt-1 sm:mt-2">
-                    {stats.tierDistribution[key as keyof typeof stats.tierDistribution]}
+                    {stats.tierDistribution[key as keyof typeof stats.tierDistribution] || 0}
                   </div>
-                  <div className="text-xs opacity-80 mt-1">{config.rate}%</div>
-                  <div className="text-[10px] sm:text-xs opacity-70">{config.requirements} indicações</div>
+                  <div className="text-xs opacity-80 mt-1">{config.commissionRate}%</div>
+                  <div className="text-[10px] sm:text-xs opacity-70">{config.requirements}</div>
                 </div>
               ))}
             </div>
@@ -730,15 +701,15 @@ export default function MLMStructurePanel() {
             <TabsContent value="hierarchy" className="mt-4">
               {/* Visual Hierarchy by Tier */}
               <div className="space-y-4">
-                {Object.entries(TIER_CONFIG).reverse().map(([tierKey, config]) => {
-                  const tierAffiliates = filteredAffiliates?.filter(a => a.tier === tierKey) || [];
+                {Object.entries(TIER_VISUAL).reverse().map(([tierKey, config]) => {
+                  const tierAffiliates = filteredAffiliates?.filter(a => normalizeTier(a.tier) === tierKey) || [];
                   if (tierAffiliates.length === 0) return null;
                   
                   return (
                     <div key={tierKey} className="space-y-2">
                       <div className="flex items-center gap-2">
                         <span className="text-xl">{config.icon}</span>
-                        <span className="font-semibold text-sm">{config.label}</span>
+                        <span className="font-semibold text-sm">{config.labelPT}</span>
                         <Badge variant="outline" className="text-xs">{tierAffiliates.length}</Badge>
                       </div>
                       <div className="flex flex-wrap gap-2 pl-7">
