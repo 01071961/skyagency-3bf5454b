@@ -69,7 +69,7 @@ export default function VIPNotifications() {
     try {
       setIsLoading(true);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('vip_notifications')
         .select('*')
         .eq('user_id', user?.id)
@@ -78,8 +78,17 @@ export default function VIPNotifications() {
 
       if (error) throw error;
 
-      setNotifications(data || []);
-      setUnreadCount(data?.filter(n => !n.is_read).length || 0);
+      const notifs = (data || []).map((n: any) => ({
+        id: n.id,
+        type: n.type || 'info',
+        title: n.title || '',
+        message: n.message || '',
+        is_read: n.is_read || false,
+        action_url: n.action_url,
+        created_at: n.created_at,
+      }));
+      setNotifications(notifs);
+      setUnreadCount(notifs.filter((n: any) => !n.is_read).length);
     } catch (error) {
       console.error('Error loading notifications:', error);
     } finally {
@@ -112,7 +121,7 @@ export default function VIPNotifications() {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await supabase
+      await (supabase as any)
         .from('vip_notifications')
         .update({ is_read: true })
         .eq('id', notificationId);
@@ -128,7 +137,7 @@ export default function VIPNotifications() {
 
   const markAllAsRead = async () => {
     try {
-      await supabase
+      await (supabase as any)
         .from('vip_notifications')
         .update({ is_read: true })
         .eq('user_id', user?.id)

@@ -108,29 +108,36 @@ export default function VIPPerformance() {
         .eq('affiliate_id', affiliateData.id)
         .order('created_at', { ascending: false });
 
-      setCommissions(commissionsData || []);
+      setCommissions((commissionsData || []).map((c: any) => ({
+        ...c,
+        order_total: c.amount || 0,
+      })));
 
       // Calculate metrics
       const monthStart = startOfMonth(endDate);
-      const monthlyCommissions = (commissionsData || []).filter(
-        c => new Date(c.created_at) >= monthStart
+      const mappedCommissions = (commissionsData || []).map((c: any) => ({
+        ...c,
+        order_total: c.amount || 0,
+      }));
+      const monthlyCommissions = mappedCommissions.filter(
+        (c: any) => new Date(c.created_at) >= monthStart
       );
       const monthlyReferrals = (referrals || []).filter(
         r => new Date(r.created_at) >= monthStart
       );
 
-      const totalEarnings = (commissionsData || []).reduce(
-        (sum, c) => sum + (c.status !== 'cancelled' ? c.commission_amount : 0), 0
+      const totalEarnings = mappedCommissions.reduce(
+        (sum: number, c: any) => sum + (c.status !== 'cancelled' ? c.commission_amount : 0), 0
       );
       const monthlyEarnings = monthlyCommissions.reduce(
-        (sum, c) => sum + (c.status !== 'cancelled' ? c.commission_amount : 0), 0
+        (sum: number, c: any) => sum + (c.status !== 'cancelled' ? c.commission_amount : 0), 0
       );
-      const pendingCommissions = (commissionsData || [])
-        .filter(c => c.status === 'pending')
-        .reduce((sum, c) => sum + c.commission_amount, 0);
-      const paidCommissions = (commissionsData || [])
-        .filter(c => c.status === 'paid')
-        .reduce((sum, c) => sum + c.commission_amount, 0);
+      const pendingCommissions = mappedCommissions
+        .filter((c: any) => c.status === 'pending')
+        .reduce((sum: number, c: any) => sum + c.commission_amount, 0);
+      const paidCommissions = mappedCommissions
+        .filter((c: any) => c.status === 'paid')
+        .reduce((sum: number, c: any) => sum + c.commission_amount, 0);
 
       const convertedReferrals = (referrals || []).filter(r => r.status === 'converted').length;
       const conversionRate = referrals?.length 
@@ -138,7 +145,7 @@ export default function VIPPerformance() {
         : 0;
 
       const averageOrderValue = convertedReferrals > 0
-        ? (commissionsData || []).reduce((sum, c) => sum + c.order_total, 0) / convertedReferrals
+        ? mappedCommissions.reduce((sum: number, c: any) => sum + c.order_total, 0) / convertedReferrals
         : 0;
 
       setMetrics({

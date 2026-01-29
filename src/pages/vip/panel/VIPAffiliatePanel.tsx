@@ -201,22 +201,34 @@ export default function VIPAffiliatePanel() {
       setIsLoading(true);
       
       // Get recent actions
-      const { data: actions } = await supabase
-        .from('vip_affiliate_actions')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false })
-        .limit(10);
+      let actions: any[] = [];
+      try {
+        const { data } = await (supabase as any)
+          .from('vip_affiliate_actions')
+          .select('*')
+          .eq('user_id', user?.id)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        actions = data || [];
+      } catch (e) {
+        console.log('vip_affiliate_actions not available');
+      }
 
       // Get unread notifications count
-      const { count: unreadCount } = await supabase
-        .from('vip_notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user?.id)
-        .eq('is_read', false);
+      let unreadCount = 0;
+      try {
+        const { count } = await (supabase as any)
+          .from('vip_notifications')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user?.id)
+          .eq('is_read', false);
+        unreadCount = count || 0;
+      } catch (e) {
+        console.log('vip_notifications not available');
+      }
 
-      setRecentActions(actions || []);
-      setUnreadNotifications(unreadCount || 0);
+      setRecentActions(actions);
+      setUnreadNotifications(unreadCount);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {

@@ -280,8 +280,9 @@ export default function VIPCheckout() {
       const orderItems = items.map(item => ({
         order_id: orderData.id,
         product_id: String(item.id),
-        product_name: item.name,
-        price: item.price,
+        unit_price: item.price,
+        total_price: item.price,
+        quantity: 1,
       }));
 
       await supabase.from('order_items').insert(orderItems);

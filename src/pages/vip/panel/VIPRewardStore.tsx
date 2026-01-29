@@ -119,9 +119,21 @@ export default function VIPRewardStore() {
         .from('rewards')
         .select('*')
         .eq('is_active', true)
-        .order('points_required', { ascending: true });
+        .order('points_cost', { ascending: true });
 
-      setRewards(rewardsData || []);
+      setRewards((rewardsData || []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        description: r.description,
+        type: r.reward_type || 'physical',
+        points_required: r.points_cost || 0,
+        tier_required: null,
+        stock: r.quantity_available,
+        image_url: r.image_url,
+        is_active: r.is_active,
+        cash_value: null,
+        discount_percent: null,
+      })));
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {

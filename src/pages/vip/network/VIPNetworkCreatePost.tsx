@@ -122,7 +122,7 @@ export default function VIPNetworkCreatePost() {
         .filter(tag => tag.trim())
         .map(tag => tag.toLowerCase());
 
-      const { error: postError } = await supabase
+      const { error: postError } = await (supabase as any)
         .from('vip_posts')
         .insert({
           author_id: user.id,

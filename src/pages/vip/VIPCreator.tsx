@@ -164,17 +164,22 @@ export default function VIPCreator() {
       console.log('[VIPCreator] Tier check:', { tier: affiliate.tier, tierLower, isGoldOrHigher });
       
       // Verificar se tem assinatura ativa de creator
-      const { data: subscription, error: subError } = await supabase
-        .from('creator_subscriptions')
-        .select('*')
-        .eq('affiliate_id', affiliate.id)
-        .in('status', ['active', 'trialing'])
-        .maybeSingle();
+      let hasActiveSubscription = false;
+      try {
+        const { data: subscription } = await (supabase as any)
+          .from('creator_subscriptions')
+          .select('*')
+          .eq('affiliate_id', affiliate.id)
+          .in('status', ['active', 'trialing'])
+          .maybeSingle();
 
-      console.log('[VIPCreator] Creator subscription:', subscription, subError);
+        console.log('[VIPCreator] Creator subscription:', subscription);
+        hasActiveSubscription = !!subscription && subscription.status === 'active';
+      } catch (e) {
+        console.log('[VIPCreator] Creator subscriptions table not available');
+      }
 
       // Determinar acesso ao Creator
-      const hasActiveSubscription = !!subscription && subscription.status === 'active';
       const canBeCreator = affiliate.is_creator || isGoldOrHigher || hasActiveSubscription;
 
       console.log('[VIPCreator] Access check:', { 
@@ -185,47 +190,66 @@ export default function VIPCreator() {
       });
 
       // Buscar produtos do creator
-      const { data: creatorProducts } = await supabase
+      const { data: creatorProducts } = await (supabase as any)
         .from('products')
-        .select('id, name, slug, price, status, cover_image_url, creator_commission_rate, created_at')
+        .select('id, name, slug, price, status, cover_image_url, commission_percent, created_at')
         .eq('creator_id', affiliate.id)
         .order('created_at', { ascending: false });
 
       // Buscar payouts com informações do pedido
-      const { data: creatorPayouts } = await supabase
-        .from('creator_payouts')
-        .select(`
-          *,
-          order:order_id(order_number, customer_email, customer_name),
-          product:product_id(name)
-        `)
-        .eq('creator_id', affiliate.id)
-        .order('created_at', { ascending: false });
+      let creatorPayoutsData: any[] = [];
+      try {
+        const { data: payoutsRaw } = await (supabase as any)
+          .from('creator_payouts')
+          .select('*')
+          .eq('creator_id', affiliate.id)
+          .order('created_at', { ascending: false });
+        
+        creatorPayoutsData = (payoutsRaw || []).map((p: any) => ({
+          id: p.id,
+          order_id: p.order_id,
+          gross_amount: p.gross_amount || p.amount || 0,
+          creator_amount: p.creator_amount || p.amount || 0,
+          platform_amount: p.platform_amount || 0,
+          affiliate_amount: p.affiliate_amount || 0,
+          status: p.status || 'pending',
+          created_at: p.created_at,
+          paid_at: p.paid_at,
+        }));
+      } catch (e) {
+        console.log('[VIPCreator] Creator payouts table not available');
+      }
 
-      const totalRevenue = creatorPayouts?.reduce((sum, p) => sum + (p.creator_amount || 0), 0) || 0;
-      const pendingPayout = creatorPayouts?.filter(p => p.status === 'pending').reduce((sum, p) => sum + (p.creator_amount || 0), 0) || 0;
-      const paidPayout = creatorPayouts?.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.creator_amount || 0), 0) || 0;
+      const totalRevenue = creatorPayoutsData.reduce((sum, p) => sum + (p.creator_amount || 0), 0);
+      const pendingPayout = creatorPayoutsData.filter(p => p.status === 'pending').reduce((sum, p) => sum + (p.creator_amount || 0), 0);
+      const paidPayout = creatorPayoutsData.filter(p => p.status === 'paid').reduce((sum, p) => sum + (p.creator_amount || 0), 0);
 
       setStats({
         totalProducts: creatorProducts?.length || 0,
-        totalSales: creatorPayouts?.length || 0,
+        totalSales: creatorPayoutsData.length,
         totalRevenue,
         pendingPayout,
         paidPayout,
         isCreator: affiliate.is_creator || false,
         tier: affiliate.tier || 'bronze',
         canBeCreator,
-        creatorCommissionRate: affiliate.creator_commission_rate || 70,
-        platformCommissionRate: affiliate.platform_commission_rate || 20,
-        affiliateCommissionRate: affiliate.affiliate_commission_rate || 10
+        creatorCommissionRate: 70,
+        platformCommissionRate: 20,
+        affiliateCommissionRate: 10
       });
 
-      setProducts(creatorProducts?.map(p => ({
-        ...p,
-        creator_commission_rate: p.creator_commission_rate || 70
-      })) || []);
+      setProducts((creatorProducts || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        slug: p.slug,
+        price: p.price,
+        status: p.status,
+        cover_image_url: p.cover_image_url,
+        creator_commission_rate: p.commission_percent || 70,
+        created_at: p.created_at,
+      })));
 
-      setPayouts(creatorPayouts || []);
+      setPayouts(creatorPayoutsData);
 
     } catch (error) {
       console.error('Error loading creator data:', error);

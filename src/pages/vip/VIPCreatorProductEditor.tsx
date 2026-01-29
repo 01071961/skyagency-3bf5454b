@@ -225,12 +225,18 @@ export default function VIPCreatorProductEditor() {
     queryKey: ['creator-affiliate', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data } = await supabase
+      const { data } = await (supabase as any)
         .from('vip_affiliates')
-        .select('id, is_creator, creator_commission_rate, platform_commission_rate, affiliate_commission_rate')
+        .select('id, is_creator, commission_percent')
         .eq('user_id', user.id)
         .single();
-      return data;
+      return data ? {
+        id: data.id,
+        is_creator: data.is_creator,
+        creator_commission_rate: 70,
+        platform_commission_rate: 20,
+        affiliate_commission_rate: data.commission_percent || 10,
+      } : null;
     },
     enabled: !!user,
   });
@@ -273,18 +279,18 @@ export default function VIPCreatorProductEditor() {
         short_description: existingProduct.short_description || '',
         description: existingProduct.description || '',
         cover_image_url: existingProduct.cover_image_url || '',
-        product_type: (existingProduct.product_type as ProductType) || 'course',
-        pricing_type: existingProduct.pricing_type || 'one_time',
+        product_type: ((existingProduct as any).product_type || 'course') as ProductType,
+        pricing_type: ((existingProduct as any).pricing_type || 'one_time') as 'free' | 'one_time' | 'subscription',
         price: existingProduct.price || 97,
         original_price: existingProduct.original_price || null,
         max_installments: existingProduct.max_installments || 12,
         guarantee_days: existingProduct.guarantee_days || 7,
         access_days: existingProduct.access_days || null,
-        affiliate_enabled: existingProduct.affiliate_enabled !== false,
-        affiliate_commission_rate: existingProduct.affiliate_commission_rate || 10,
-        creator_commission_rate: existingProduct.creator_commission_rate || 70,
-        platform_commission_rate: existingProduct.platform_commission_rate || 20,
-        status: existingProduct.status || 'draft',
+        affiliate_enabled: (existingProduct as any).affiliate_enabled !== false,
+        affiliate_commission_rate: existingProduct.commission_percent || 10,
+        creator_commission_rate: (existingProduct as any).creator_commission_rate || 70,
+        platform_commission_rate: (existingProduct as any).platform_commission_rate || 20,
+        status: (existingProduct.status || 'draft') as 'draft' | 'published' | 'archived',
         trailer_url: existingProduct.trailer_url || '',
         enable_certificate: true,
         certificate_hours: 10,
@@ -439,14 +445,14 @@ export default function VIPCreatorProductEditor() {
 
       let result;
       if (productId) {
-        result = await supabase
+        result = await (supabase as any)
           .from('products')
           .update(productData)
           .eq('id', productId)
           .select()
           .single();
       } else {
-        result = await supabase
+        result = await (supabase as any)
           .from('products')
           .insert([productData])
           .select()

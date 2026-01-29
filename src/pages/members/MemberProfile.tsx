@@ -368,12 +368,11 @@ const MemberProfile = () => {
     if (!user || !newSkill.skill_name) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('profile_skills')
         .insert({
           user_id: user.id,
-          skill_name: newSkill.skill_name,
-          proficiency_level: newSkill.proficiency_level
+          name: newSkill.skill_name,
         });
 
       if (error) throw error;

@@ -76,7 +76,10 @@ export default function VIPInvites() {
           .eq('referrer_id', affiliateData.id)
           .order('created_at', { ascending: false });
 
-        setReferrals(referralsData || []);
+        setReferrals((referralsData || []).map((r: any) => ({
+          ...r,
+          referred_email: r.referred_user_id || 'Usuário',
+        })));
       }
     } catch (error) {
       console.error('Error loading data:', error);
