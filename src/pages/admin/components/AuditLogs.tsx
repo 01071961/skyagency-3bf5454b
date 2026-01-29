@@ -84,7 +84,7 @@ const AuditLogs = () => {
         .limit(500);
 
       if (error) throw error;
-      setLogs(data || []);
+      setLogs((data || []) as any);
       
       // Calculate stats
       const uniqueAdmins = new Set(data?.map(l => l.admin_id).filter(Boolean)).size;

@@ -93,7 +93,7 @@ const AutomationManager = () => {
         .select("*")
         .order("priority", { ascending: false });
       if (error) throw error;
-      setRules((data as AutomationRule[]) || []);
+      setRules((data || []) as any);
     } catch (error) {
       console.error("Error fetching rules:", error);
       toast.error("Erro ao carregar regras");
@@ -105,10 +105,10 @@ const AutomationManager = () => {
       const { data, error } = await supabase
         .from("automation_logs")
         .select("*")
-        .order("executed_at", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(50);
       if (error) throw error;
-      setLogs((data as AutomationLog[]) || []);
+      setLogs((data || []) as any);
     } catch (error) {
       console.error("Error fetching logs:", error);
     }

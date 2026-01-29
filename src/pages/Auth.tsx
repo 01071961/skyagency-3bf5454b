@@ -165,8 +165,8 @@ const Auth = () => {
       await supabase
         .from('affiliate_referrals')
         .insert({
-          referrer_id: affiliate.id,
-          referred_email: email,
+          affiliate_id: affiliate.id,
+          referred_user_id: null,
           status: 'pending',
         });
 

@@ -68,19 +68,19 @@ export function ShortsFeed({ className }: ShortsFeedProps) {
 
   const fetchShorts = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase
         .from('videos')
         .select('*')
         .eq('type', 'short')
         .eq('status', 'ready')
         .eq('privacy', 'public')
         .order('created_at', { ascending: false })
-        .limit(50);
+        .limit(50) as any);
 
       if (error) throw error;
 
       // Fetch profiles for all users
-      const userIds = [...new Set((data || []).map(v => v.user_id))];
+      const userIds = [...new Set((data || []).map((v: any) => v.user_id))];
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, name, avatar_url')
@@ -95,10 +95,10 @@ export function ShortsFeed({ className }: ShortsFeedProps) {
           .from('video_likes')
           .select('video_id')
           .eq('user_id', user.id);
-        likedIds = likes?.map(l => l.video_id) || [];
+        likedIds = (likes as any[] || []).map(l => l.video_id) || [];
       }
 
-      const shortsWithLikes = (data || []).map(short => ({
+      const shortsWithLikes = (data || []).map((short: any) => ({
         ...short,
         user: profileMap.get(short.user_id),
         isLiked: likedIds.includes(short.id),

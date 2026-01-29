@@ -72,7 +72,7 @@ const CampaignManagerNew = () => {
       ]);
 
       if (campaignsRes.error) throw campaignsRes.error;
-      setCampaigns(campaignsRes.data || []);
+      setCampaigns((campaignsRes.data || []) as any);
       
       if (contactsRes.data) {
         const uniqueEmails = new Map<string, ContactEmail>();

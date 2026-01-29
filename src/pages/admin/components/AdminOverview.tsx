@@ -108,8 +108,7 @@ const AdminOverview = () => {
       // Fetch admin emails from admin_emails table
       const { data: adminEmails } = await supabase
         .from('admin_emails')
-        .select('email, name, is_active')
-        .eq('is_active', true);
+        .select('*');
 
       // Fetch user roles
       const { data: userRoles } = await supabase
@@ -120,11 +119,11 @@ const AdminOverview = () => {
       const adminUsers: AdminUser[] = [];
       
       if (adminEmails) {
-        for (const admin of adminEmails) {
+        for (const admin of adminEmails as any[]) {
           adminUsers.push({
             id: admin.email,
             email: admin.email,
-            name: admin.name || admin.email.split('@')[0],
+            name: admin.email?.split('@')[0] || 'Admin',
             role: 'admin',
           });
         }

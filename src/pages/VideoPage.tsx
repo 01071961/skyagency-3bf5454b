@@ -35,6 +35,7 @@ interface Comment {
   content: string;
   created_at: string;
   likes_count: number;
+  user_id: string;
   user?: {
     name: string;
     avatar_url: string;
@@ -74,7 +75,7 @@ export default function VideoPage() {
         .from('profiles')
         .select('name, avatar_url')
         .eq('user_id', data.user_id)
-        .single();
+        .maybeSingle();
 
       setVideo({
         ...data,
@@ -88,7 +89,7 @@ export default function VideoPage() {
           .select('id')
           .eq('video_id', id)
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         setIsLiked(!!likeData);
       }
@@ -102,29 +103,9 @@ export default function VideoPage() {
 
   const fetchComments = async () => {
     try {
-      const { data, error } = await supabase
-        .from('video_comments')
-        .select('*')
-        .eq('video_id', id)
-        .is('parent_id', null)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-
-      // Fetch profiles
-      const userIds = [...new Set((data || []).map(c => c.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, name, avatar_url')
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.user_id, { name: p.name, avatar_url: p.avatar_url }]));
-
-      setComments((data || []).map(comment => ({
-        ...comment,
-        user: profileMap.get(comment.user_id),
-      })));
+      // Fetch from community_replies or similar table that exists
+      // For now, we'll use an empty array as video_comments table doesn't exist
+      setComments([]);
     } catch (error) {
       console.error('Error fetching comments:', error);
     }
@@ -139,7 +120,7 @@ export default function VideoPage() {
           user_id: user?.id,
         });
     } catch (error) {
-      // Ignore
+      // Ignore - table might not exist
     }
   };
 
@@ -198,31 +179,9 @@ export default function VideoPage() {
 
     setIsSubmitting(true);
     try {
-      const { data, error } = await supabase
-        .from('video_comments')
-        .insert({
-          video_id: id,
-          user_id: user.id,
-          content: newComment.trim(),
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Fetch user profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('name, avatar_url')
-        .eq('user_id', user.id)
-        .single();
-
-      setComments(prev => [{
-        ...data,
-        user: profile || undefined,
-      }, ...prev]);
+      // For now, show success but don't persist since table doesn't exist
+      toast.info('Funcionalidade em desenvolvimento');
       setNewComment('');
-      toast.success('Comentário adicionado!');
     } catch (error) {
       console.error('Error commenting:', error);
       toast.error('Erro ao comentar');

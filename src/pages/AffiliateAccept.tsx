@@ -19,10 +19,11 @@ interface Invite {
   commission_rate: number;
   status: string;
   invited_by: string | null;
+  expires_at: string | null;
   program?: {
     name: string;
     description: string;
-  };
+  } | null;
 }
 
 export default function AffiliateAccept() {
@@ -53,14 +54,12 @@ export default function AffiliateAccept() {
     try {
       setIsLoading(true);
       
+      // First get the invite
       const { data: inviteData, error: inviteError } = await supabase
         .from('affiliate_invites')
-        .select(`
-          *,
-          program:program_id (name, description)
-        `)
-        .eq('token', token)
-        .single();
+        .select('*')
+        .eq('code', token)
+        .maybeSingle();
 
       if (inviteError || !inviteData) {
         setError('Convite não encontrado ou inválido');
@@ -72,12 +71,25 @@ export default function AffiliateAccept() {
         return;
       }
 
-      if (inviteData.status === 'expired' || new Date(inviteData.expires_at) < new Date()) {
+      if (inviteData.expires_at && new Date(inviteData.expires_at) < new Date()) {
         setError('Este convite expirou');
         return;
       }
 
-      setInvite(inviteData as Invite);
+      // Build the invite object
+      const formattedInvite: Invite = {
+        id: inviteData.id,
+        email: inviteData.email,
+        name: inviteData.name,
+        program_id: inviteData.program_id,
+        commission_rate: inviteData.commission_rate || 0,
+        status: inviteData.status || 'pending',
+        invited_by: inviteData.invited_by,
+        expires_at: inviteData.expires_at,
+        program: null
+      };
+
+      setInvite(formattedInvite);
     } catch (err) {
       console.error('Erro ao carregar convite:', err);
       setError('Erro ao carregar convite');
@@ -104,7 +116,7 @@ export default function AffiliateAccept() {
       .from('profiles')
       .select('email')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (profile?.email !== invite.email) {
       toast({
@@ -150,7 +162,6 @@ export default function AffiliateAccept() {
         .update({
           status: 'accepted',
           accepted_at: new Date().toISOString(),
-          accepted_by: user.id,
         })
         .eq('id', invite.id);
 

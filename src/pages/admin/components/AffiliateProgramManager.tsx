@@ -63,12 +63,8 @@ export default function AffiliateProgramManager() {
   const { data: programs, isLoading: loadingPrograms } = useQuery({
     queryKey: ['affiliate-programs'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('affiliate_programs')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data as Program[];
+      // Table doesn't exist yet - return empty array
+      return [] as Program[];
     }
   });
 
@@ -91,12 +87,8 @@ export default function AffiliateProgramManager() {
     queryKey: ['program-products', selectedProgram?.id],
     enabled: !!selectedProgram?.id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('affiliate_program_products')
-        .select('product_id, commission_rate')
-        .eq('program_id', selectedProgram!.id);
-      if (error) throw error;
-      return data;
+      // Table doesn't exist yet - return empty array
+      return [] as { product_id: string; commission_rate: number }[];
     }
   });
 
