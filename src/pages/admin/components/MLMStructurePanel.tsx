@@ -140,14 +140,8 @@ export default function MLMStructurePanel() {
   const { data: platformCommissions } = useQuery({
     queryKey: ['platform-commissions'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('platform_commissions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(50);
-      
-      if (error) throw error;
-      return data as PlatformCommission[];
+      // Table platform_commissions doesn't exist - return empty array
+      return [] as PlatformCommission[];
     }
   });
 

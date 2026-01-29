@@ -39,25 +39,29 @@ interface Profile {
 
 interface Order {
   id: string;
-  order_number: string;
-  customer_name: string;
-  customer_email: string;
-  customer_phone: string | null;
+  order_number: string | null;
   total: number;
-  status: string;
-  created_at: string;
+  status: string | null;
+  created_at: string | null;
   paid_at: string | null;
   user_id: string | null;
-  order_items: { product_name: string; price: number }[];
+  // Optional fields
+  customer_name?: string;
+  customer_email?: string;
+  customer_phone?: string | null;
+  order_items?: { product_name: string; price: number }[];
 }
 
 interface Enrollment {
   id: string;
   product_id: string;
-  status: string;
-  progress_percent: number;
-  enrolled_at: string;
+  status: string | null;
+  progress_percent: number | null;
+  created_at: string | null;
+  started_at: string | null;
   expires_at: string | null;
+  // UI mapping
+  enrolled_at?: string;
   product: { name: string; product_type: string } | null;
 }
 
@@ -95,7 +99,14 @@ export default function CustomerManager() {
         .order('created_at', { ascending: false });
 
       if (ordersError) throw ordersError;
-      setOrders(ordersData || []);
+      // Map to interface with defaults
+      setOrders((ordersData || []).map((o: any) => ({
+        ...o,
+        customer_name: o.customer_name || 'Cliente',
+        customer_email: o.customer_email || '',
+        customer_phone: o.customer_phone || null,
+        order_items: Array.isArray(o.order_items) ? o.order_items : [],
+      })) as Order[]);
 
     } catch (error) {
       console.error('Error loading data:', error);
@@ -113,9 +124,13 @@ export default function CustomerManager() {
         .from('enrollments')
         .select('*, product:products(name, product_type)')
         .eq('user_id', userId)
-        .order('enrolled_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
-      setCustomerEnrollments(enrollmentsData || []);
+      // Map to interface with enrolled_at
+      setCustomerEnrollments((enrollmentsData || []).map((e: any) => ({
+        ...e,
+        enrolled_at: e.started_at || e.created_at,
+      })) as Enrollment[]);
 
       // Load orders
       const { data: ordersData } = await supabase
@@ -124,7 +139,13 @@ export default function CustomerManager() {
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      setCustomerOrders(ordersData || []);
+      setCustomerOrders((ordersData || []).map((o: any) => ({
+        ...o,
+        customer_name: o.customer_name || 'Cliente',
+        customer_email: o.customer_email || '',
+        customer_phone: o.customer_phone || null,
+        order_items: Array.isArray(o.order_items) ? o.order_items : [],
+      })) as Order[]);
 
     } catch (error) {
       console.error('Error loading customer details:', error);

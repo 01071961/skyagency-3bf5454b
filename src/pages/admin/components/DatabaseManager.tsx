@@ -51,25 +51,28 @@ const REGIONS = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'];
 
 interface ContactSubmission {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
-  message: string;
-  user_type: string | null;
+  message: string | null;
   source: string | null;
-  created_at: string;
-  read_at: string | null;
-  replied_at: string | null;
+  created_at: string | null;
+  status: string | null;
+  // Optional fields
+  user_type?: string | null;
+  read_at?: string | null;
+  replied_at?: string | null;
 }
 
 interface ChatConversation {
   id: string;
-  visitor_id: string;
+  visitor_id: string | null;
   visitor_name: string | null;
-  visitor_email: string | null;
-  visitor_phone: string | null;
-  subject: string | null;
-  status: string;
-  created_at: string;
+  status: string | null;
+  created_at: string | null;
+  // Optional fields
+  visitor_email?: string | null;
+  visitor_phone?: string | null;
+  subject?: string | null;
 }
 
 // Helper to extract state from phone number (DDD)
@@ -134,8 +137,20 @@ const DatabaseManager = () => {
       if (contactsRes.error) throw contactsRes.error;
       if (conversationsRes.error) throw conversationsRes.error;
 
-      setContacts(contactsRes.data || []);
-      setConversations(conversationsRes.data || []);
+      // Map to interface with defaults
+      setContacts((contactsRes.data || []).map((d: any) => ({
+        ...d,
+        user_type: d.user_type || null,
+        read_at: d.read_at || null,
+        replied_at: d.replied_at || null,
+      })) as ContactSubmission[]);
+      
+      setConversations((conversationsRes.data || []).map((d: any) => ({
+        ...d,
+        visitor_email: d.visitor_email || null,
+        visitor_phone: d.visitor_phone || null,
+        subject: d.subject || null,
+      })) as ChatConversation[]);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Erro ao carregar dados');

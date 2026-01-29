@@ -29,14 +29,18 @@ interface EmailTemplate {
 
 interface EmailLog {
   id: string;
-  template_id: string | null;
   recipient_email: string;
-  recipient_name: string | null;
-  subject: string;
-  status: string;
+  status: string | null;
   error_message: string | null;
-  sent_at: string | null;
-  created_at: string;
+  created_at: string | null;
+  campaign_id: string | null;
+  opened_at: string | null;
+  clicked_at: string | null;
+  // UI-only fields
+  template_id?: string | null;
+  recipient_name?: string | null;
+  subject?: string;
+  sent_at?: string | null;
 }
 
 const EmailManager = () => {
@@ -63,7 +67,14 @@ const EmailManager = () => {
       if (logsRes.error) throw logsRes.error;
 
       setTemplates(templatesRes.data || []);
-      setLogs(logsRes.data || []);
+      // Map to interface with defaults
+      setLogs((logsRes.data || []).map((d: any) => ({
+        ...d,
+        template_id: d.template_id || null,
+        recipient_name: d.recipient_name || null,
+        subject: d.subject || 'Sem assunto',
+        sent_at: d.sent_at || d.created_at,
+      })) as EmailLog[]);
     } catch (error) {
       console.error('Error fetching data:', error);
       toast({

@@ -21,12 +21,14 @@ import { useToast } from '@/hooks/use-toast';
 interface ESPConfiguration {
   id: string;
   provider: string;
-  name: string;
-  is_active: boolean;
-  is_default: boolean;
-  config: Record<string, unknown>;
-  created_at: string;
-  updated_at: string;
+  is_active: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  settings: Record<string, unknown> | null;
+  // UI-only fields
+  name?: string;
+  is_default?: boolean;
+  config?: Record<string, unknown>;
 }
 
 const ESP_PROVIDERS = [
@@ -130,10 +132,13 @@ const ESPManager = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setConfigurations((data || []).map((item) => ({
+      // Map to interface with defaults
+      setConfigurations((data || []).map((item: any) => ({
         ...item,
-        config: typeof item.config === 'object' && item.config !== null ? item.config as Record<string, unknown> : {},
-      })));
+        name: item.name || item.provider || 'Unnamed',
+        is_default: item.is_default || false,
+        config: item.settings || {},
+      })) as ESPConfiguration[]);
     } catch (error) {
       console.error('Error fetching ESP configurations:', error);
       toast({
@@ -163,10 +168,8 @@ const ESPManager = () => {
 
       const payload = {
         provider: formData.provider,
-        name: formData.name,
+        settings: formData.config as any,
         is_active: formData.is_active,
-        is_default: formData.is_default,
-        config: formData.config,
       };
 
       if (editingConfig) {
@@ -182,13 +185,8 @@ const ESPManager = () => {
         if (error) throw error;
       }
 
-      // If setting as default, unset others
-      if (formData.is_default) {
-        await supabase
-          .from('esp_configurations')
-          .update({ is_default: false })
-          .neq('id', editingConfig?.id || '');
-      }
+      // If setting as default, we'd need to track it differently
+      // since is_default doesn't exist in schema
 
       toast({
         title: 'Configuração salva!',

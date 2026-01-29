@@ -80,25 +80,29 @@ export function ShortsFeed({ className }: ShortsFeedProps) {
       if (error) throw error;
 
       // Fetch profiles for all users
-      const userIds = [...new Set((data || []).map((v: any) => v.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, name, avatar_url')
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.user_id, { name: p.name, avatar_url: p.avatar_url }]));
+      const videoData = (data || []) as any[];
+      const userIds = [...new Set(videoData.map((v: any) => v.user_id))] as string[];
+      
+      let profileMap = new Map<string, { name: string; avatar_url: string }>();
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, name, avatar_url')
+          .in('user_id', userIds);
+        profileMap = new Map((profiles || []).map(p => [p.user_id, { name: p.name || '', avatar_url: p.avatar_url || '' }]));
+      }
 
       // Get likes if user is logged in
       let likedIds: string[] = [];
       if (user) {
-        const { data: likes } = await supabase
+        const { data: likes } = await (supabase
           .from('video_likes')
           .select('video_id')
-          .eq('user_id', user.id);
-        likedIds = (likes as any[] || []).map(l => l.video_id) || [];
+          .eq('user_id', user.id) as any);
+        likedIds = ((likes as any[]) || []).map(l => l.video_id);
       }
 
-      const shortsWithLikes = (data || []).map((short: any) => ({
+      const shortsWithLikes = videoData.map((short: any) => ({
         ...short,
         user: profileMap.get(short.user_id),
         isLiked: likedIds.includes(short.id),

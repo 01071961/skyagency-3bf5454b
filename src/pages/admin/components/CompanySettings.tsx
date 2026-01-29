@@ -155,16 +155,25 @@ const CompanySettings = () => {
   const loadCompanySettings = async () => {
     setLoading(true);
     try {
-      const { data: companyData, error } = await supabase
+      // company_settings uses key-value format, load all rows
+      const { data: rows, error } = await supabase
         .from('company_settings')
-        .select('*')
-        .limit(1)
-        .maybeSingle();
+        .select('*');
 
       if (error && error.code !== 'PGRST116') throw error;
 
-      if (companyData) {
-        setData(companyData as CompanyData);
+      if (rows && rows.length > 0) {
+        // Parse key-value rows into CompanyData object
+        const parsed: any = { ...initialData };
+        rows.forEach((row: any) => {
+          if (row.setting_key && row.setting_value !== undefined) {
+            parsed[row.setting_key] = typeof row.setting_value === 'object' 
+              ? row.setting_value 
+              : row.setting_value;
+          }
+          if (!parsed.id) parsed.id = row.id;
+        });
+        setData(parsed as CompanyData);
       }
     } catch (error) {
       console.error('Error loading company settings:', error);
@@ -244,50 +253,30 @@ const CompanySettings = () => {
     setSaving(true);
 
     try {
-      const isUpdate = !!data.id;
+      // company_settings uses key-value format, upsert each key
+      const settingsToSave = Object.entries(data).filter(([key]) => key !== 'id');
       
-      if (isUpdate) {
+      for (const [key, value] of settingsToSave) {
         const { error } = await supabase
           .from('company_settings')
-          .update({
-            ...data,
+          .upsert({
+            setting_key: key,
+            setting_value: value as any,
             updated_at: new Date().toISOString(),
-            updated_by: user.id
-          })
-          .eq('id', data.id);
+          }, { onConflict: 'setting_key' });
 
-        if (error) throw error;
-        
-        // Log the update action
-        await logAction({
-          action: 'company_settings_updated',
-          targetTable: 'company_settings',
-          targetId: data.id,
-          details: { company_name: data.company_name }
-        });
-      } else {
-        const { data: newData, error } = await supabase
-          .from('company_settings')
-          .insert({
-            ...data,
-            updated_by: user.id
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        if (newData) {
-          setData(newData as CompanyData);
-          
-          // Log the create action
-          await logAction({
-            action: 'company_settings_created',
-            targetTable: 'company_settings',
-            targetId: newData.id,
-            details: { company_name: data.company_name }
-          });
+        if (error) {
+          console.error(`Error saving ${key}:`, error);
         }
       }
+      
+      // Log the action
+      await logAction({
+        action: 'company_settings_updated',
+        targetTable: 'company_settings',
+        targetId: data.id || 'new',
+        details: { company_name: data.company_name }
+      });
 
       toast.success('Configurações salvas com sucesso!');
     } catch (error) {
