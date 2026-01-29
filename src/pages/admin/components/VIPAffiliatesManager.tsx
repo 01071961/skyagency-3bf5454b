@@ -9,11 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Users, DollarSign, TrendingUp, Award, Search, Check, X, Eye, Edit, Wallet, FolderKanban } from 'lucide-react';
+import { Users, DollarSign, TrendingUp, Award, Search, Check, X, Eye, Edit, Wallet, FolderKanban, Star, Zap } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import AffiliateProgramManager from './AffiliateProgramManager';
+import { getTierConfig, calculatePoints, calculateTierProgress, normalizeTier, formatBRL, TIER_CONFIG } from '@/lib/affiliate/tierConfig';
 
 const VIPAffiliatesManager = () => {
   const { toast } = useToast();
@@ -139,13 +141,13 @@ const VIPAffiliatesManager = () => {
     return matchesSearch;
   });
 
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case 'diamond': return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
-      case 'gold': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'silver': return 'bg-gray-400/20 text-gray-300 border-gray-400/30';
-      default: return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-    }
+  const getTierBadge = (tier: string) => {
+    const config = getTierConfig(tier);
+    return (
+      <Badge className={`${config.bgColor} ${config.textColor} ${config.borderColor}`}>
+        {config.icon} {config.labelPT}
+      </Badge>
+    );
   };
 
   const getStatusColor = (status: string) => {
@@ -168,6 +170,12 @@ const VIPAffiliatesManager = () => {
       case 'suspended': return 'Suspenso';
       default: return status;
     }
+  };
+
+  // Helper to calculate affiliate points
+  const getAffiliatePoints = (affiliate: any) => {
+    const directSales = Number(affiliate.total_earnings || 0);
+    return calculatePoints(directSales * 10, 0);
   };
 
   return (
@@ -315,9 +323,7 @@ const VIPAffiliatesManager = () => {
                       <code className="text-xs bg-muted px-2 py-1 rounded">{affiliate.referral_code}</code>
                     </TableCell>
                     <TableCell>
-                      <Badge className={getTierColor(affiliate.tier || 'bronze')}>
-                        {affiliate.tier?.toUpperCase() || 'BRONZE'}
-                      </Badge>
+                      {getTierBadge(affiliate.tier || 'bronze')}
                     </TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(affiliate.status || 'pending')}>
@@ -413,9 +419,7 @@ const VIPAffiliatesManager = () => {
                                 </div>
                                 <div>
                                   <p className="text-sm text-muted-foreground">Tier</p>
-                                  <Badge className={getTierColor(affiliate.tier || 'bronze')}>
-                                    {affiliate.tier?.toUpperCase()}
-                                  </Badge>
+                                  {getTierBadge(affiliate.tier || 'bronze')}
                                 </div>
                                 <div>
                                   <p className="text-sm text-muted-foreground">Chave PIX</p>
