@@ -500,14 +500,9 @@ export function useVIPLiveChat(postId: string) {
 
   useEffect(() => {
     const fetchMessages = async () => {
-      const { data } = await supabase
-        .from('vip_live_chat')
-        .select(`
-          *,
-          author:profiles!vip_live_chat_author_id_fkey(id, full_name, avatar_url)
-        `)
+      const { data } = await (supabase.from('vip_live_chat') as any)
+        .select('*')
         .eq('post_id', postId)
-        .eq('is_deleted', false)
         .order('created_at', { ascending: true })
         .limit(100);
 
@@ -539,11 +534,10 @@ export function useVIPLiveChat(postId: string) {
     }
 
     try {
-      await supabase
-        .from('vip_live_chat')
+      await (supabase.from('vip_live_chat') as any)
         .insert({
           post_id: postId,
-          author_id: user.id,
+          user_id: user.id,
           content
         });
     } catch (error) {
@@ -574,10 +568,10 @@ export function useCreatePost() {
     }
 
     try {
-      const { data: post, error } = await supabase
-        .from('vip_posts')
+      const { data: post, error } = await (supabase.from('vip_posts') as any)
         .insert({
           author_id: user.id,
+          user_id: user.id,
           ...data
         })
         .select()

@@ -63,10 +63,18 @@ export function TranscriptRenderer({ productId, showDownload = true }: Transcrip
     queryFn: async () => {
       const { data } = await supabase
         .from('company_settings')
-        .select('*, transcript_template:transcript_templates(*)')
-        .limit(1)
-        .maybeSingle();
-      return data;
+        .select('*');
+      
+      // Parse key-value settings into object
+      const settings: any = { company_name: 'SKY Brasil Academy' };
+      if (data) {
+        for (const row of data) {
+          if (row.setting_key) {
+            settings[row.setting_key] = row.setting_value;
+          }
+        }
+      }
+      return settings;
     }
   });
 

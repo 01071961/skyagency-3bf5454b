@@ -91,6 +91,7 @@ export type Database = {
           id: string
           is_available: boolean | null
           schedule: Json | null
+          status: string | null
           updated_at: string | null
         }
         Insert: {
@@ -98,6 +99,7 @@ export type Database = {
           id?: string
           is_available?: boolean | null
           schedule?: Json | null
+          status?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -105,6 +107,7 @@ export type Database = {
           id?: string
           is_available?: boolean | null
           schedule?: Json | null
+          status?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -131,6 +134,7 @@ export type Database = {
         Row: {
           affiliate_id: string
           amount: number
+          commission_amount: number | null
           commission_percent: number | null
           created_at: string | null
           id: string
@@ -143,6 +147,7 @@ export type Database = {
         Insert: {
           affiliate_id: string
           amount: number
+          commission_amount?: number | null
           commission_percent?: number | null
           created_at?: string | null
           id?: string
@@ -155,6 +160,7 @@ export type Database = {
         Update: {
           affiliate_id?: string
           amount?: number
+          commission_amount?: number | null
           commission_percent?: number | null
           created_at?: string | null
           id?: string
@@ -181,32 +187,68 @@ export type Database = {
           },
         ]
       }
+      affiliate_follows: {
+        Row: {
+          created_at: string | null
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       affiliate_invites: {
         Row: {
           accepted_at: string | null
           affiliate_id: string
           code: string
+          commission_rate: number | null
           created_at: string | null
           email: string
+          expires_at: string | null
           id: string
+          invited_by: string | null
+          name: string | null
+          program_id: string | null
           status: string | null
         }
         Insert: {
           accepted_at?: string | null
           affiliate_id: string
           code: string
+          commission_rate?: number | null
           created_at?: string | null
           email: string
+          expires_at?: string | null
           id?: string
+          invited_by?: string | null
+          name?: string | null
+          program_id?: string | null
           status?: string | null
         }
         Update: {
           accepted_at?: string | null
           affiliate_id?: string
           code?: string
+          commission_rate?: number | null
           created_at?: string | null
           email?: string
+          expires_at?: string | null
           id?: string
+          invited_by?: string | null
+          name?: string | null
+          program_id?: string | null
           status?: string | null
         }
         Relationships: [
@@ -320,18 +362,21 @@ export type Database = {
       }
       affiliate_post_likes: {
         Row: {
+          affiliate_id: string | null
           created_at: string | null
           id: string
           post_id: string
           user_id: string
         }
         Insert: {
+          affiliate_id?: string | null
           created_at?: string | null
           id?: string
           post_id: string
           user_id: string
         }
         Update: {
+          affiliate_id?: string | null
           created_at?: string | null
           id?: string
           post_id?: string
@@ -350,43 +395,52 @@ export type Database = {
       affiliate_posts: {
         Row: {
           author_id: string
+          category: string | null
           comments_count: number | null
           content: string | null
           created_at: string | null
           id: string
+          image_url: string | null
           is_pinned: boolean | null
           likes_count: number | null
           media_urls: string[] | null
           post_type: string | null
           shares_count: number | null
+          title: string | null
           updated_at: string | null
           youtube_url: string | null
         }
         Insert: {
           author_id: string
+          category?: string | null
           comments_count?: number | null
           content?: string | null
           created_at?: string | null
           id?: string
+          image_url?: string | null
           is_pinned?: boolean | null
           likes_count?: number | null
           media_urls?: string[] | null
           post_type?: string | null
           shares_count?: number | null
+          title?: string | null
           updated_at?: string | null
           youtube_url?: string | null
         }
         Update: {
           author_id?: string
+          category?: string | null
           comments_count?: number | null
           content?: string | null
           created_at?: string | null
           id?: string
+          image_url?: string | null
           is_pinned?: boolean | null
           likes_count?: number | null
           media_urls?: string[] | null
           post_type?: string | null
           shares_count?: number | null
+          title?: string | null
           updated_at?: string | null
           youtube_url?: string | null
         }
@@ -409,6 +463,7 @@ export type Database = {
           level: number | null
           referred_affiliate_id: string | null
           referred_user_id: string | null
+          referrer_id: string | null
           status: string | null
         }
         Insert: {
@@ -419,6 +474,7 @@ export type Database = {
           level?: number | null
           referred_affiliate_id?: string | null
           referred_user_id?: string | null
+          referrer_id?: string | null
           status?: string | null
         }
         Update: {
@@ -429,6 +485,7 @@ export type Database = {
           level?: number | null
           referred_affiliate_id?: string | null
           referred_user_id?: string | null
+          referrer_id?: string | null
           status?: string | null
         }
         Relationships: [
@@ -1453,6 +1510,7 @@ export type Database = {
       exam_attempts: {
         Row: {
           completed_at: string | null
+          created_at: string | null
           exam_id: string
           id: string
           passed: boolean | null
@@ -1463,6 +1521,7 @@ export type Database = {
         }
         Insert: {
           completed_at?: string | null
+          created_at?: string | null
           exam_id: string
           id?: string
           passed?: boolean | null
@@ -1473,6 +1532,7 @@ export type Database = {
         }
         Update: {
           completed_at?: string | null
+          created_at?: string | null
           exam_id?: string
           id?: string
           passed?: boolean | null
@@ -1576,22 +1636,34 @@ export type Database = {
           certificate_id: string | null
           generated_at: string | null
           id: string
+          metadata: Json | null
           pdf_url: string | null
+          product_id: string | null
+          status: string | null
           template_id: string | null
+          user_id: string | null
         }
         Insert: {
           certificate_id?: string | null
           generated_at?: string | null
           id?: string
+          metadata?: Json | null
           pdf_url?: string | null
+          product_id?: string | null
+          status?: string | null
           template_id?: string | null
+          user_id?: string | null
         }
         Update: {
           certificate_id?: string | null
           generated_at?: string | null
           id?: string
+          metadata?: Json | null
           pdf_url?: string | null
+          product_id?: string | null
+          status?: string | null
           template_id?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -2261,75 +2333,108 @@ export type Database = {
       }
       products: {
         Row: {
+          access_days: number | null
+          affiliate_free: boolean | null
           category_id: string | null
           commission_percent: number | null
+          cover_image_url: string | null
           cover_url: string | null
           created_at: string | null
           description: string | null
           duration_hours: number | null
+          faq: Json | null
+          guarantee_days: number | null
           id: string
           instructor_id: string | null
           is_featured: boolean | null
           is_free: boolean | null
           is_published: boolean | null
+          max_installments: number | null
           metadata: Json | null
           name: string
           original_price: number | null
           price: number | null
+          pricing_type: string | null
           product_type: Database["public"]["Enums"]["product_type"] | null
           requires_approval: boolean | null
+          sales_page_content: Json | null
           short_description: string | null
           slug: string | null
+          status: string | null
+          testimonials: Json | null
           thumbnail_url: string | null
           total_lessons: number | null
+          trailer_url: string | null
           updated_at: string | null
         }
         Insert: {
+          access_days?: number | null
+          affiliate_free?: boolean | null
           category_id?: string | null
           commission_percent?: number | null
+          cover_image_url?: string | null
           cover_url?: string | null
           created_at?: string | null
           description?: string | null
           duration_hours?: number | null
+          faq?: Json | null
+          guarantee_days?: number | null
           id?: string
           instructor_id?: string | null
           is_featured?: boolean | null
           is_free?: boolean | null
           is_published?: boolean | null
+          max_installments?: number | null
           metadata?: Json | null
           name: string
           original_price?: number | null
           price?: number | null
+          pricing_type?: string | null
           product_type?: Database["public"]["Enums"]["product_type"] | null
           requires_approval?: boolean | null
+          sales_page_content?: Json | null
           short_description?: string | null
           slug?: string | null
+          status?: string | null
+          testimonials?: Json | null
           thumbnail_url?: string | null
           total_lessons?: number | null
+          trailer_url?: string | null
           updated_at?: string | null
         }
         Update: {
+          access_days?: number | null
+          affiliate_free?: boolean | null
           category_id?: string | null
           commission_percent?: number | null
+          cover_image_url?: string | null
           cover_url?: string | null
           created_at?: string | null
           description?: string | null
           duration_hours?: number | null
+          faq?: Json | null
+          guarantee_days?: number | null
           id?: string
           instructor_id?: string | null
           is_featured?: boolean | null
           is_free?: boolean | null
           is_published?: boolean | null
+          max_installments?: number | null
           metadata?: Json | null
           name?: string
           original_price?: number | null
           price?: number | null
+          pricing_type?: string | null
           product_type?: Database["public"]["Enums"]["product_type"] | null
           requires_approval?: boolean | null
+          sales_page_content?: Json | null
           short_description?: string | null
           slug?: string | null
+          status?: string | null
+          testimonials?: Json | null
           thumbnail_url?: string | null
           total_lessons?: number | null
+          trailer_url?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -2496,16 +2601,24 @@ export type Database = {
           created_at: string | null
           drive_connected: boolean | null
           email: string | null
+          followers_count: number | null
+          following_count: number | null
           full_name: string | null
           github_url: string | null
           headline: string | null
           id: string
           instagram_url: string | null
+          is_public: boolean | null
           linkedin_url: string | null
           location: string | null
           name: string | null
           phone: string | null
           plan: string | null
+          profile_views: number | null
+          storage_used: number | null
+          stripe_customer_id: string | null
+          subscription_end: string | null
+          subscription_status: string | null
           subscription_tier: string | null
           tiktok_url: string | null
           twitter_url: string | null
@@ -2524,16 +2637,24 @@ export type Database = {
           created_at?: string | null
           drive_connected?: boolean | null
           email?: string | null
+          followers_count?: number | null
+          following_count?: number | null
           full_name?: string | null
           github_url?: string | null
           headline?: string | null
           id?: string
           instagram_url?: string | null
+          is_public?: boolean | null
           linkedin_url?: string | null
           location?: string | null
           name?: string | null
           phone?: string | null
           plan?: string | null
+          profile_views?: number | null
+          storage_used?: number | null
+          stripe_customer_id?: string | null
+          subscription_end?: string | null
+          subscription_status?: string | null
           subscription_tier?: string | null
           tiktok_url?: string | null
           twitter_url?: string | null
@@ -2552,16 +2673,24 @@ export type Database = {
           created_at?: string | null
           drive_connected?: boolean | null
           email?: string | null
+          followers_count?: number | null
+          following_count?: number | null
           full_name?: string | null
           github_url?: string | null
           headline?: string | null
           id?: string
           instagram_url?: string | null
+          is_public?: boolean | null
           linkedin_url?: string | null
           location?: string | null
           name?: string | null
           phone?: string | null
           plan?: string | null
+          profile_views?: number | null
+          storage_used?: number | null
+          stripe_customer_id?: string | null
+          subscription_end?: string | null
+          subscription_status?: string | null
           subscription_tier?: string | null
           tiktok_url?: string | null
           twitter_url?: string | null
@@ -2641,6 +2770,54 @@ export type Database = {
           name?: string
           points_cost?: number
           quantity_available?: number | null
+        }
+        Relationships: []
+      }
+      scheduled_posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          error_message: string | null
+          facebook_post_id: string | null
+          id: string
+          instagram_post_id: string | null
+          media_type: string | null
+          media_url: string | null
+          platform: string
+          published_at: string | null
+          scheduled_at: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          error_message?: string | null
+          facebook_post_id?: string | null
+          id?: string
+          instagram_post_id?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          platform: string
+          published_at?: string | null
+          scheduled_at: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          error_message?: string | null
+          facebook_post_id?: string | null
+          id?: string
+          instagram_post_id?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          platform?: string
+          published_at?: string | null
+          scheduled_at?: string
+          status?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -2740,6 +2917,7 @@ export type Database = {
           created_at: string | null
           current_streak: number | null
           id: string
+          last_activity_date: string | null
           last_study_date: string | null
           longest_streak: number | null
           total_study_days: number | null
@@ -2750,6 +2928,7 @@ export type Database = {
           created_at?: string | null
           current_streak?: number | null
           id?: string
+          last_activity_date?: string | null
           last_study_date?: string | null
           longest_streak?: number | null
           total_study_days?: number | null
@@ -2760,6 +2939,7 @@ export type Database = {
           created_at?: string | null
           current_streak?: number | null
           id?: string
+          last_activity_date?: string | null
           last_study_date?: string | null
           longest_streak?: number | null
           total_study_days?: number | null
@@ -2820,6 +3000,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_health_status: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          last_check_at: string | null
+          response_time_ms: number | null
+          service_name: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          last_check_at?: string | null
+          response_time_ms?: number | null
+          service_name: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          last_check_at?: string | null
+          response_time_ms?: number | null
+          service_name?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       transcript_templates: {
         Row: {
@@ -2887,8 +3100,11 @@ export type Database = {
         Row: {
           available_points: number | null
           created_at: string | null
+          current_balance: number | null
           id: string
           level: number | null
+          tier: string | null
+          total_earned: number | null
           total_points: number | null
           updated_at: string | null
           user_id: string
@@ -2896,8 +3112,11 @@ export type Database = {
         Insert: {
           available_points?: number | null
           created_at?: string | null
+          current_balance?: number | null
           id?: string
           level?: number | null
+          tier?: string | null
+          total_earned?: number | null
           total_points?: number | null
           updated_at?: string | null
           user_id: string
@@ -2905,8 +3124,11 @@ export type Database = {
         Update: {
           available_points?: number | null
           created_at?: string | null
+          current_balance?: number | null
           id?: string
           level?: number | null
+          tier?: string | null
+          total_earned?: number | null
           total_points?: number | null
           updated_at?: string | null
           user_id?: string
@@ -3076,7 +3298,9 @@ export type Database = {
           bank_info: Json | null
           bio: string | null
           created_at: string | null
+          direct_referrals_count: number | null
           id: string
+          is_creator: boolean | null
           level1_count: number | null
           level2_count: number | null
           pix_key: string | null
@@ -3098,7 +3322,9 @@ export type Database = {
           bank_info?: Json | null
           bio?: string | null
           created_at?: string | null
+          direct_referrals_count?: number | null
           id?: string
+          is_creator?: boolean | null
           level1_count?: number | null
           level2_count?: number | null
           pix_key?: string | null
@@ -3120,7 +3346,9 @@ export type Database = {
           bank_info?: Json | null
           bio?: string | null
           created_at?: string | null
+          direct_referrals_count?: number | null
           id?: string
+          is_creator?: boolean | null
           level1_count?: number | null
           level2_count?: number | null
           pix_key?: string | null
@@ -3147,41 +3375,254 @@ export type Database = {
           },
         ]
       }
-      vip_posts: {
+      vip_bookmarks: {
         Row: {
-          comments_count: number | null
-          content: string | null
           created_at: string | null
           id: string
-          likes_count: number | null
-          media_urls: string[] | null
-          post_type: string | null
-          updated_at: string | null
+          post_id: string
           user_id: string
         }
         Insert: {
-          comments_count?: number | null
-          content?: string | null
           created_at?: string | null
           id?: string
-          likes_count?: number | null
-          media_urls?: string[] | null
-          post_type?: string | null
-          updated_at?: string | null
+          post_id: string
           user_id: string
         }
         Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vip_bookmarks_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "vip_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vip_comments: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string | null
+          id: string
+          is_pinned: boolean | null
+          likes_count: number | null
+          parent_id: string | null
+          post_id: string
+          replies_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          likes_count?: number | null
+          parent_id?: string | null
+          post_id: string
+          replies_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          likes_count?: number | null
+          parent_id?: string | null
+          post_id?: string
+          replies_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vip_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "vip_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vip_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "vip_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vip_follows: {
+        Row: {
+          created_at: string | null
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      vip_live_chat: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_highlighted: boolean | null
+          is_pinned: boolean | null
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_highlighted?: boolean | null
+          is_pinned?: boolean | null
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_highlighted?: boolean | null
+          is_pinned?: boolean | null
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vip_live_chat_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "vip_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vip_posts: {
+        Row: {
+          author_id: string | null
+          comments_count: number | null
+          content: string | null
+          created_at: string | null
+          dislikes_count: number | null
+          hashtags: string[] | null
+          id: string
+          is_live: boolean | null
+          likes_count: number | null
+          live_ended_at: string | null
+          live_started_at: string | null
+          media_type: string | null
+          media_url: string | null
+          media_urls: string[] | null
+          post_type: string | null
+          shares_count: number | null
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+          views_count: number | null
+          youtube_video_id: string | null
+        }
+        Insert: {
+          author_id?: string | null
           comments_count?: number | null
           content?: string | null
           created_at?: string | null
+          dislikes_count?: number | null
+          hashtags?: string[] | null
           id?: string
+          is_live?: boolean | null
           likes_count?: number | null
+          live_ended_at?: string | null
+          live_started_at?: string | null
+          media_type?: string | null
+          media_url?: string | null
           media_urls?: string[] | null
           post_type?: string | null
+          shares_count?: number | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+          views_count?: number | null
+          youtube_video_id?: string | null
+        }
+        Update: {
+          author_id?: string | null
+          comments_count?: number | null
+          content?: string | null
+          created_at?: string | null
+          dislikes_count?: number | null
+          hashtags?: string[] | null
+          id?: string
+          is_live?: boolean | null
+          likes_count?: number | null
+          live_ended_at?: string | null
+          live_started_at?: string | null
+          media_type?: string | null
+          media_url?: string | null
+          media_urls?: string[] | null
+          post_type?: string | null
+          shares_count?: number | null
+          thumbnail_url?: string | null
+          title?: string | null
           updated_at?: string | null
           user_id?: string
+          views_count?: number | null
+          youtube_video_id?: string | null
         }
         Relationships: []
+      }
+      vip_reactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          reaction_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          reaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vip_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "vip_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       withdrawals: {
         Row: {
@@ -3241,7 +3682,7 @@ export type Database = {
     }
     Enums: {
       affiliate_tier: "bronze" | "silver" | "gold" | "platinum" | "diamond"
-      app_role: "user" | "streamer" | "admin"
+      app_role: "user" | "streamer" | "admin" | "owner" | "editor"
       enrollment_status: "active" | "completed" | "cancelled" | "expired"
       order_status: "pending" | "paid" | "cancelled" | "refunded" | "expired"
       product_type:
@@ -3250,6 +3691,7 @@ export type Database = {
         | "mentorship"
         | "subscription"
         | "physical"
+        | "mentoring"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3378,7 +3820,7 @@ export const Constants = {
   public: {
     Enums: {
       affiliate_tier: ["bronze", "silver", "gold", "platinum", "diamond"],
-      app_role: ["user", "streamer", "admin"],
+      app_role: ["user", "streamer", "admin", "owner", "editor"],
       enrollment_status: ["active", "completed", "cancelled", "expired"],
       order_status: ["pending", "paid", "cancelled", "refunded", "expired"],
       product_type: [
@@ -3387,6 +3829,7 @@ export const Constants = {
         "mentorship",
         "subscription",
         "physical",
+        "mentoring",
       ],
     },
   },

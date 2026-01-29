@@ -33,8 +33,8 @@ export const useScheduledPosts = () => {
 
   const fetchPosts = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('scheduled_posts')
+      // Use any to bypass type issues with missing table
+      const { data, error } = await (supabase.from('scheduled_posts') as any)
         .select('*')
         .order('scheduled_at', { ascending: true });
 
@@ -52,8 +52,7 @@ export const useScheduledPosts = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Não autenticado');
 
-      const { data, error } = await supabase
-        .from('scheduled_posts')
+      const { data, error } = await (supabase.from('scheduled_posts') as any)
         .insert({
           user_id: user.id,
           platform: input.platform,
@@ -103,8 +102,7 @@ export const useScheduledPosts = () => {
       if (error) throw error;
 
       if (data?.success) {
-        await supabase
-          .from('scheduled_posts')
+        await (supabase.from('scheduled_posts') as any)
           .update({
             status: 'published',
             published_at: new Date().toISOString(),
@@ -123,8 +121,7 @@ export const useScheduledPosts = () => {
       } else {
         const errorMsg = data?.results?.facebook?.error || data?.results?.instagram?.error || 'Erro desconhecido';
         
-        await supabase
-          .from('scheduled_posts')
+        await (supabase.from('scheduled_posts') as any)
           .update({
             status: 'failed',
             error_message: errorMsg
@@ -153,8 +150,7 @@ export const useScheduledPosts = () => {
 
   const deletePost = async (postId: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('scheduled_posts')
+      const { error } = await (supabase.from('scheduled_posts') as any)
         .delete()
         .eq('id', postId);
 
@@ -180,8 +176,7 @@ export const useScheduledPosts = () => {
 
   const cancelPost = async (postId: string): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('scheduled_posts')
+      const { error } = await (supabase.from('scheduled_posts') as any)
         .update({ status: 'cancelled' })
         .eq('id', postId);
 

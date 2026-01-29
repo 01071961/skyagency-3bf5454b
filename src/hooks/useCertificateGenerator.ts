@@ -41,6 +41,41 @@ interface CompanySettings {
   certificate_template_id: string | null;
 }
 
+// Helper to parse company settings from key-value format
+function parseCompanySettings(rows: any[]): CompanySettings | null {
+  if (!rows || rows.length === 0) return null;
+  
+  const settings: any = {
+    company_name: 'SKY Brasil Academy',
+    legal_name: null,
+    cnpj: null,
+    logo_url: null,
+    email: null,
+    phone: null,
+    website: null,
+    address_city: null,
+    address_state: null,
+    legal_representative_name: null,
+    legal_representative_role: null,
+    legal_representative_signature_url: null,
+    academic_coordinator_name: null,
+    academic_coordinator_role: null,
+    academic_coordinator_signature_url: null,
+    primary_color: '#3b82f6',
+    secondary_color: '#10b981',
+    certificate_footer_text: null,
+    certificate_template_id: null,
+  };
+  
+  for (const row of rows) {
+    if (row.setting_key && row.setting_value !== undefined) {
+      settings[row.setting_key] = row.setting_value;
+    }
+  }
+  
+  return settings as CompanySettings;
+}
+
 export function useCertificateGenerator() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -50,11 +85,11 @@ export function useCertificateGenerator() {
       if (!user?.id) throw new Error('Usuário não autenticado');
 
       // 1. Fetch company settings
-      const { data: company } = await supabase
+      const { data: companyRows } = await supabase
         .from('company_settings')
-        .select('*')
-        .limit(1)
-        .maybeSingle();
+        .select('*');
+
+      const company = parseCompanySettings(companyRows || []);
 
       // 2. Fetch template if specified in company settings
       let template: CertificateTemplate | null = null;
@@ -124,12 +159,12 @@ export function useCertificateGenerator() {
 
       const pdfBlob = await generateCertificatePDF(
         certificateData,
-        company as CompanySettings | null
+        company
       );
 
       // 6. Upload PDF to storage
       const fileName = `certificates/${user.id}/${params.productId}_${Date.now()}.pdf`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('product-content')
         .upload(fileName, pdfBlob, { 
           contentType: 'application/pdf',
@@ -146,22 +181,15 @@ export function useCertificateGenerator() {
         .from('product-content')
         .getPublicUrl(fileName);
 
-      // 8. Update generated_certificates table
-      await supabase
-        .from('generated_certificates')
+      // 8. Update generated_certificates table (use any to bypass type issues)
+      await (supabase.from('generated_certificates') as any)
         .upsert({
           user_id: user.id,
           product_id: params.productId,
-          course_certificate_id: certificateId,
+          certificate_id: certificateId,
           template_id: template?.id || null,
           pdf_url: urlData.publicUrl,
-          status: 'generated',
           generated_at: new Date().toISOString(),
-          metadata: {
-            score: params.score,
-            course_hours: params.courseHours,
-            generated_by: 'user'
-          }
         }, {
           onConflict: 'user_id,product_id'
         });

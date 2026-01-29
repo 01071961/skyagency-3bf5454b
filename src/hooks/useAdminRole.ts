@@ -14,6 +14,9 @@ const roleCache = new Map<string, { isAdmin: boolean; timestamp: number }>();
 let globalHasChecked = false;
 let globalUserId: string | null = null;
 
+// Valid admin roles
+const ADMIN_ROLES = ['admin', 'owner', 'editor'];
+
 export const useAdminRole = () => {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -96,7 +99,6 @@ export const useAdminRole = () => {
           .from('user_roles')
           .select('role')
           .eq('user_id', user.id)
-          .in('role', ['admin', 'owner', 'editor'])
           .maybeSingle();
 
         clearTimeout(timeoutId);
@@ -124,7 +126,8 @@ export const useAdminRole = () => {
             hasCheckedRef.current = true;
           }
         } else {
-          const hasAdminRole = !!data && ['admin', 'owner', 'editor'].includes(data.role);
+          // Check if user has any admin role
+          const hasAdminRole = !!data && ADMIN_ROLES.includes(data.role);
           console.log('[useAdminRole] Role check result:', hasAdminRole ? data.role : 'none');
           setIsAdmin(hasAdminRole);
           setCachedRole(user.id, hasAdminRole);
