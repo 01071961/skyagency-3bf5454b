@@ -45,19 +45,19 @@ export default function EducationImpactDashboard() {
     queryKey: ['education-overview'],
     queryFn: async () => {
       // Aggregate data from various tables
-      const { data: progressData } = await (supabase
+      const { data: progressData } = await (supabase as any)
         .from('certification_progress')
-        .select('certification, exams_passed, exams_completed, average_score, total_study_hours') as any);
+        .select('certification, exams_passed, exams_completed, average_score, total_study_hours');
 
       const { data: attemptsData } = await supabase
         .from('exam_attempts')
         .select('passed, score')
         .eq('status', 'completed');
 
-      const { data: partnersData } = await (supabase
+      const { data: partnersData } = await (supabase as any)
         .from('b2b_partners')
         .select('status, enrolled_employees')
-        .eq('status', 'active') as any);
+        .eq('status', 'active');
 
       const pData = (progressData || []) as any[];
       const aData = (attemptsData || []) as any[];
@@ -90,9 +90,9 @@ export default function EducationImpactDashboard() {
   const { data: certStats } = useQuery({
     queryKey: ['certification-breakdown'],
     queryFn: async () => {
-      const { data } = await (supabase
+      const { data } = await (supabase as any)
         .from('certification_progress')
-        .select('certification, exams_completed, exams_passed, average_score') as any);
+        .select('certification, exams_completed, exams_passed, average_score');
 
       // Aggregate by certification
       const stats: Record<string, CertificationStats> = {};

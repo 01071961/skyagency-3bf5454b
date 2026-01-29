@@ -413,7 +413,7 @@ export default function SalesPageEditor({ productId }: SalesPageEditorProps) {
               </Button>
             </div>
 
-            {product?.sales_page_published ? (
+            {(product as any)?.sales_page_published ? (
               <Badge variant="default" className="bg-green-600">
                 <Eye className="w-3 h-3 mr-1" />
                 Publicada
@@ -551,7 +551,7 @@ export default function SalesPageEditor({ productId }: SalesPageEditorProps) {
               </Button>
             </div>
 
-            {product?.sales_page_published ? (
+            {(product as any)?.sales_page_published ? (
               <Badge variant="default" className="bg-green-600">
                 <Eye className="w-3 h-3 mr-1" />
                 Publicada
@@ -1268,7 +1268,7 @@ export default function SalesPageEditor({ productId }: SalesPageEditorProps) {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    {product?.sales_page_published ? (
+                    {(product as any)?.sales_page_published ? (
                       <Button
                         type="button"
                         variant="destructive"
@@ -1290,7 +1290,7 @@ export default function SalesPageEditor({ productId }: SalesPageEditorProps) {
                     )}
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>{product?.sales_page_published ? 'Remove a página do ar' : 'Torna a página visível publicamente'}</p>
+                    <p>{(product as any)?.sales_page_published ? 'Remove a página do ar' : 'Torna a página visível publicamente'}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

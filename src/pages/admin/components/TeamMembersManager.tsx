@@ -105,11 +105,11 @@ const TeamMembersManager = () => {
       // Fetch pending invites - table may not exist
       let invitesData: any[] = [];
       try {
-        const { data, error: invitesError } = await (supabase
+        const { data, error: invitesError } = await (supabase as any)
           .from('admin_invitations')
           .select('*')
           .is('accepted_at', null)
-          .order('created_at', { ascending: false }) as any);
+          .order('created_at', { ascending: false });
 
         if (!invitesError && data) {
           invitesData = data;
@@ -173,10 +173,10 @@ const TeamMembersManager = () => {
 
   const handleCancelInvite = async (inviteId: string) => {
     try {
-      const { error } = await (supabase
+      const { error } = await (supabase as any)
         .from('admin_invitations')
         .delete()
-        .eq('id', inviteId) as any);
+        .eq('id', inviteId);
 
       if (error) throw error;
 

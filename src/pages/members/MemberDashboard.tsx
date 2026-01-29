@@ -82,15 +82,15 @@ const MemberDashboard = () => {
         .eq('user_id', user.id)
         .eq('status', 'completed');
       
-      const { data: certProgress } = await supabase
+      const { data: certProgress } = await (supabase as any)
         .from('certification_progress')
         .select('*')
         .eq('user_id', user.id);
       
       return {
         totalAttempts: attempts?.length || 0,
-        passedExams: attempts?.filter(a => a.passed)?.length || 0,
-        avgScore: attempts?.length ? Math.round(attempts.reduce((acc, a) => acc + (a.score || 0), 0) / attempts.length) : 0,
+        passedExams: attempts?.filter((a: any) => a.passed)?.length || 0,
+        avgScore: attempts?.length ? Math.round(attempts.reduce((acc: number, a: any) => acc + (a.score || 0), 0) / attempts.length) : 0,
         certifications: certProgress || []
       };
     },
@@ -114,25 +114,26 @@ const MemberDashboard = () => {
 
   const fetchEnrollments = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('enrollments')
         .select(`
           id,
           product_id,
           progress_percent,
-          enrolled_at,
+          created_at,
           expires_at,
           status,
           product:products(name, cover_image_url, slug)
         `)
         .eq('user_id', user?.id)
         .eq('status', 'active')
-        .order('enrolled_at', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const enrollmentData = (data || []).map(e => ({
+      const enrollmentData = ((data || []) as any[]).map((e: any) => ({
         ...e,
+        enrolled_at: e.created_at,
         product: Array.isArray(e.product) ? e.product[0] : e.product
       })) as Enrollment[];
 

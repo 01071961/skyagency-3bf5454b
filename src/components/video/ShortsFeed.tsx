@@ -68,14 +68,14 @@ export function ShortsFeed({ className }: ShortsFeedProps) {
 
   const fetchShorts = async () => {
     try {
-      const { data, error } = await (supabase
+      const { data, error } = await (supabase as any)
         .from('videos')
         .select('*')
         .eq('type', 'short')
         .eq('status', 'ready')
         .eq('privacy', 'public')
         .order('created_at', { ascending: false })
-        .limit(50) as any);
+        .limit(50);
 
       if (error) throw error;
 

@@ -91,7 +91,15 @@ export default function SimulatorPlayer() {
         .single();
       
       if (error) throw error;
-      return data as Simulator;
+      // Map to Simulator interface with defaults
+      return {
+        ...data,
+        shuffle_questions: (data as any).shuffle_questions ?? true,
+        shuffle_options: (data as any).shuffle_options ?? true,
+        allow_review: (data as any).allow_review ?? true,
+        show_correct_answers: (data as any).show_correct_answers ?? true,
+        max_attempts: (data as any).max_attempts ?? 999,
+      } as Simulator;
     },
     enabled: !!simulatorId
   });
@@ -100,15 +108,19 @@ export default function SimulatorPlayer() {
   const { data: questions, isLoading: loadingQuestions } = useQuery({
     queryKey: ['simulator-questions', simulatorId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('simulator_questions')
         .select('*')
         .eq('simulator_id', simulatorId)
-        .order('order_index');
+        .order('position');
       
       if (error) throw error;
       
-      let qs = data as SimulatorQuestion[];
+      let qs = ((data || []) as any[]).map((q: any) => ({
+        ...q,
+        order_index: q.order_index || q.position || 0,
+        options: Array.isArray(q.options) ? q.options : [],
+      })) as SimulatorQuestion[];
       
       // Shuffle questions if enabled
       if (simulator?.shuffle_questions) {

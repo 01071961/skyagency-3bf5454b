@@ -76,7 +76,16 @@ export default function ExamPlayer() {
         .eq('id', examId)
         .single();
       if (error) throw error;
-      return data as Exam;
+      // Map to Exam interface with defaults for missing fields
+      return {
+        ...data,
+        certification: (data as any).certification || data.exam_type || 'ancord',
+        total_questions: (data as any).total_questions || 50,
+        shuffle_questions: (data as any).shuffle_questions ?? true,
+        shuffle_options: (data as any).shuffle_options ?? true,
+        show_answers_after: (data as any).show_answers_after ?? true,
+        certificate_on_pass: (data as any).certificate_on_pass ?? false,
+      } as unknown as Exam;
     },
   });
 
@@ -86,16 +95,16 @@ export default function ExamPlayer() {
     queryFn: async () => {
       if (!exam) return [];
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('financial_questions')
         .select('*')
-        .eq('certification', exam.certification as any)
+        .eq('certification', exam.certification)
         .eq('is_active', true)
         .limit(exam.total_questions);
       
       if (error) throw error;
       
-      let processedQuestions = (data || []).map((q: any) => ({
+      let processedQuestions = ((data || []) as any[]).map((q: any) => ({
         ...q,
         options: Array.isArray(q.options) ? q.options : [],
       }));
@@ -133,8 +142,9 @@ export default function ExamPlayer() {
       if (error) throw error;
       
       // Restore saved answers if any
-      if (data.answers && typeof data.answers === 'object' && !Array.isArray(data.answers)) {
-        setAnswers(data.answers as unknown as Record<string, Answer>);
+      const dataAnswers = (data as any)?.answers;
+      if (dataAnswers && typeof dataAnswers === 'object' && !Array.isArray(dataAnswers)) {
+        setAnswers(dataAnswers as unknown as Record<string, Answer>);
       }
       
       return data;
@@ -147,10 +157,10 @@ export default function ExamPlayer() {
     mutationFn: async (currentAnswers: Record<string, Answer>) => {
       if (!attemptId) return;
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('exam_attempts')
         .update({ 
-          answers: currentAnswers as unknown as any,
+          answers: currentAnswers,
           updated_at: new Date().toISOString(),
         })
         .eq('id', attemptId);

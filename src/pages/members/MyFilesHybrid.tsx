@@ -91,14 +91,14 @@ export default function MyFilesHybrid() {
       console.error('Error loading profile:', error);
     }
     setProfile(data || { drive_connected: false });
-    setUsedStorage(data?.storage_used || 0);
+    setUsedStorage((data as any)?.storage_used || 0);
     setLoading(false);
   };
 
   const loadInternalFiles = async () => {
     try {
       // List files from user_files table
-      const { data: filesData } = await supabase
+      const { data: filesData } = await (supabase as any)
         .from('user_files')
         .select('*')
         .eq('user_id', user?.id)
@@ -106,7 +106,7 @@ export default function MyFilesHybrid() {
         .order('created_at', { ascending: false });
 
       if (filesData) {
-        const formatted: FileItem[] = filesData.map(f => ({
+        const formatted: FileItem[] = ((filesData || []) as any[]).map((f: any) => ({
           id: f.id,
           name: f.file_name,
           size: f.file_size,
@@ -118,7 +118,7 @@ export default function MyFilesHybrid() {
         setInternalFiles(formatted);
         
         // Calculate total used storage
-        const total = filesData.reduce((acc, f) => acc + (f.file_size || 0), 0);
+        const total = ((filesData || []) as any[]).reduce((acc: number, f: any) => acc + (f.file_size || 0), 0);
         setUsedStorage(total);
       }
     } catch (error) {
