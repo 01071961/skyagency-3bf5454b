@@ -101,7 +101,6 @@ const AdminDashboard = () => {
     { id: 'products' as TabType, label: 'Catálogo Produtos', icon: Package },
     { id: 'certifications' as TabType, label: 'Sistema Certificação', icon: GraduationCap, highlight: true },
     { id: 'compliance' as TabType, label: 'Compliance', icon: Shield },
-    { id: 'compliance' as TabType, label: 'Compliance', icon: Shield },
     { id: 'company' as TabType, label: 'Empresa', icon: Settings },
     { id: 'vip' as TabType, label: 'Afiliados VIP', icon: Crown },
     { id: 'affiliate-programs' as TabType, label: 'Programas Afiliação', icon: Users },

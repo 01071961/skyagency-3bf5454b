@@ -70,7 +70,7 @@ const AdminOverview = () => {
         { count: totalOrders },
       ] = await Promise.all([
         supabase.from('contact_submissions').select('*', { count: 'exact', head: true }),
-        supabase.from('contact_submissions').select('*', { count: 'exact', head: true }).is('read_at', null),
+        supabase.from('contact_submissions').select('*', { count: 'exact', head: true }).eq('status', 'new'),
         supabase.from('email_logs').select('*', { count: 'exact', head: true }),
         supabase.from('chat_conversations').select('*', { count: 'exact', head: true }),
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
