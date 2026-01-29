@@ -91,11 +91,19 @@ export default function GamificationManager() {
 
   const saveMutation = useMutation({
     mutationFn: async (data: typeof formData & { id?: string }) => {
+      // Map to existing schema fields
+      const payload = {
+        name: data.name,
+        description: data.description,
+        points_cost: data.points_required,
+        quantity_available: data.stock,
+        is_active: data.is_active,
+      };
       if (data.id) {
-        const { error } = await supabase.from('rewards').update(data).eq('id', data.id);
+        const { error } = await supabase.from('rewards').update(payload).eq('id', data.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('rewards').insert(data);
+        const { error } = await supabase.from('rewards').insert(payload);
         if (error) throw error;
       }
     },
@@ -238,9 +246,9 @@ export default function GamificationManager() {
     return <Badge className={styles[status] || 'bg-muted'}>{status}</Badge>;
   };
 
-  const filteredRewards = rewards?.filter(r => 
-    r.name.toLowerCase().includes(search.toLowerCase()) ||
-    r.type.toLowerCase().includes(search.toLowerCase())
+  const filteredRewards = rewards?.filter((r: any) => 
+    r.name?.toLowerCase().includes(search.toLowerCase()) ||
+    (r.type || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (

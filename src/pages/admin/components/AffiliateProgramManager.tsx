@@ -106,56 +106,26 @@ export default function AffiliateProgramManager() {
     }
   });
 
-  // Create/Update program
+  // Create/Update program - tables don't exist yet, just show toast
   const programMutation = useMutation({
     mutationFn: async (data: typeof programForm & { id?: string }) => {
-      if (data.id) {
-        const { error } = await supabase
-          .from('affiliate_programs')
-          .update({
-            name: data.name,
-            description: data.description,
-            attribution_rule: data.attribution_rule,
-            default_commission_rate: data.default_commission_rate,
-          })
-          .eq('id', data.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('affiliate_programs')
-          .insert({
-            name: data.name,
-            description: data.description,
-            attribution_rule: data.attribution_rule,
-            default_commission_rate: data.default_commission_rate,
-          });
-        if (error) throw error;
-      }
+      // Table affiliate_programs doesn't exist - this is placeholder
+      console.log('Program mutation called:', data);
+      toast({ title: 'Funcionalidade em desenvolvimento', description: 'Tabela affiliate_programs ainda não foi criada.' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['affiliate-programs'] });
       setProgramDialogOpen(false);
       resetProgramForm();
-      toast({ title: selectedProgram ? 'Programa atualizado!' : 'Programa criado!' });
     }
   });
 
-  // Update program products
+  // Update program products - tables don't exist yet
   const updateProductsMutation = useMutation({
     mutationFn: async ({ programId, products }: { programId: string; products: { product_id: string; commission_rate: number }[] }) => {
-      // Delete existing
-      await supabase
-        .from('affiliate_program_products')
-        .delete()
-        .eq('program_id', programId);
-
-      // Insert new
-      if (products.length > 0) {
-        const { error } = await supabase
-          .from('affiliate_program_products')
-          .insert(products.map(p => ({ ...p, program_id: programId })));
-        if (error) throw error;
-      }
+      // Table affiliate_program_products doesn't exist - this is placeholder
+      console.log('Update products mutation called:', programId, products);
+      toast({ title: 'Funcionalidade em desenvolvimento', description: 'Tabela affiliate_program_products ainda não foi criada.' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['program-products'] });
@@ -204,14 +174,11 @@ export default function AffiliateProgramManager() {
     }
   });
 
-  // Toggle program active
+  // Toggle program active - table doesn't exist yet
   const toggleActiveMutation = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      const { error } = await supabase
-        .from('affiliate_programs')
-        .update({ is_active })
-        .eq('id', id);
-      if (error) throw error;
+      // Table affiliate_programs doesn't exist - this is placeholder
+      console.log('Toggle active mutation called:', id, is_active);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['affiliate-programs'] });

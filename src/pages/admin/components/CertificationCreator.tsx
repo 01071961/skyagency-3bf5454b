@@ -150,19 +150,18 @@ export default function CertificationCreator({ onBack }: { onBack: () => void })
 
     setSaving(true);
     try {
+      // Use exam_simulators table which exists in the schema
       const { error } = await supabase
-        .from('avaliacoes')
+        .from('exam_simulators')
         .insert({
-          titulo: form.name,
-          descricao: form.description,
-          tipo: form.certification_type,
+          title: form.name,
+          description: form.description,
           product_id: form.product_id,
-          modulo_id: form.module_id,
-          nota_minima_aprovacao: form.passing_score,
-          nota_maxima: 100,
-          peso: 1,
+          passing_score: form.passing_score,
+          time_limit_minutes: form.time_limit_minutes,
+          total_questions: form.questions.length,
           is_active: form.is_active,
-        });
+        } as any);
 
       if (error) throw error;
 

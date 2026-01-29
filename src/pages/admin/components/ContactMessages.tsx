@@ -13,14 +13,16 @@ import { ptBR } from 'date-fns/locale';
 
 interface ContactSubmission {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
-  message: string;
-  user_type: string | null;
+  message: string | null;
   source: string | null;
-  created_at: string;
-  read_at: string | null;
-  replied_at: string | null;
+  created_at: string | null;
+  status: string | null;
+  // Fields that may not exist in DB but are used in UI
+  user_type?: string | null;
+  read_at?: string | null;
+  replied_at?: string | null;
 }
 
 const ContactMessages = () => {
@@ -39,7 +41,13 @@ const ContactMessages = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setMessages(data || []);
+      // Map DB fields to interface, providing defaults for missing fields
+      setMessages((data || []).map((d: any) => ({
+        ...d,
+        user_type: d.user_type || null,
+        read_at: d.read_at || (d.status === 'read' ? d.updated_at : null),
+        replied_at: d.replied_at || (d.status === 'replied' ? d.updated_at : null),
+      })) as ContactSubmission[]);
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({
@@ -58,15 +66,16 @@ const ContactMessages = () => {
 
   const markAsRead = async (id: string) => {
     try {
+      // Use status field which exists in schema
       const { error } = await supabase
         .from('contact_submissions')
-        .update({ read_at: new Date().toISOString() })
+        .update({ status: 'read' })
         .eq('id', id);
 
       if (error) throw error;
       
       setMessages(messages.map(m => 
-        m.id === id ? { ...m, read_at: new Date().toISOString() } : m
+        m.id === id ? { ...m, read_at: new Date().toISOString(), status: 'read' } : m
       ));
     } catch (error) {
       console.error('Error marking as read:', error);
@@ -115,14 +124,14 @@ const ContactMessages = () => {
 
       if (error) throw error;
 
-      // Update replied_at
+      // Update status to replied
       await supabase
         .from('contact_submissions')
-        .update({ replied_at: new Date().toISOString() })
+        .update({ status: 'replied' })
         .eq('id', selectedMessage.id);
 
       setMessages(messages.map(m => 
-        m.id === selectedMessage.id ? { ...m, replied_at: new Date().toISOString() } : m
+        m.id === selectedMessage.id ? { ...m, replied_at: new Date().toISOString(), status: 'replied' } : m
       ));
 
       toast({

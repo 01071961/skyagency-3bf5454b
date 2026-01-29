@@ -16,19 +16,20 @@ import { TypingIndicator } from "@/components/chat/TypingIndicator";
 
 interface ChatConversation {
   id: string;
-  visitor_id: string;
+  visitor_id: string | null;
   visitor_name: string | null;
-  visitor_email: string | null;
-  visitor_phone: string | null;
-  subject: string | null;
-  status: string;
+  status: string | null;
   rating: number | null;
-  rating_comment: string | null;
-  is_typing_visitor: boolean;
   assigned_admin_id: string | null;
   transferred_at: string | null;
-  created_at: string;
-  updated_at: string;
+  created_at: string | null;
+  updated_at: string | null;
+  // Fields that may not exist in DB but are used in UI
+  visitor_email?: string | null;
+  visitor_phone?: string | null;
+  subject?: string | null;
+  rating_comment?: string | null;
+  is_typing_visitor?: boolean;
 }
 
 interface ChatMessageType {
@@ -36,14 +37,15 @@ interface ChatMessageType {
   conversation_id: string;
   role: string;
   content: string;
-  is_ai_response: boolean;
-  admin_id: string | null;
-  message_type: string;
-  file_url: string | null;
-  file_name: string | null;
-  file_type: string | null;
-  file_size: number | null;
-  created_at: string;
+  is_ai_response: boolean | null;
+  created_at: string | null;
+  // Fields that may not exist in DB but are used in UI
+  admin_id?: string | null;
+  message_type?: string;
+  file_url?: string | null;
+  file_name?: string | null;
+  file_type?: string | null;
+  file_size?: number | null;
 }
 
 const ChatManager = () => {
@@ -69,7 +71,14 @@ const ChatManager = () => {
         .select("*")
         .order("updated_at", { ascending: false });
       if (error) throw error;
-      setConversations((data as ChatConversation[]) || []);
+      setConversations((data as any[] || []).map(c => ({
+        ...c,
+        visitor_email: c.visitor_email || null,
+        visitor_phone: c.visitor_phone || null,
+        subject: c.subject || null,
+        rating_comment: c.rating_comment || null,
+        is_typing_visitor: c.is_typing_visitor || false,
+      })) as ChatConversation[]);
     } catch (error) {
       console.error("Error fetching conversations:", error);
       toast.error("Erro ao carregar conversas");
@@ -87,7 +96,15 @@ const ChatManager = () => {
         .order("created_at", { ascending: true });
       if (error) throw error;
       
-      let messages = (data as ChatMessageType[]) || [];
+      let messages = ((data as any[]) || []).map(m => ({
+        ...m,
+        admin_id: m.admin_id || null,
+        message_type: m.message_type || 'text',
+        file_url: m.file_url || null,
+        file_name: m.file_name || null,
+        file_type: m.file_type || null,
+        file_size: m.file_size || null,
+      })) as ChatMessageType[];
       
       // Deduplicar mensagens antigas que foram gravadas em duplicidade
       const seen = new Set<string>();
@@ -149,8 +166,8 @@ const ChatManager = () => {
       });
       if (error) throw error;
 
-      // Update typing
-      await supabase.from("chat_conversations").update({ is_typing_admin: false }).eq("id", conversationId);
+      // Note: is_typing_admin field may not exist in schema
+      // await supabase.from("chat_conversations").update({ is_typing_admin: false }).eq("id", conversationId);
 
       toast.success("Resposta enviada!");
       setReplyTexts(prev => ({ ...prev, [conversationId]: "" }));

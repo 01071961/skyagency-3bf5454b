@@ -121,9 +121,9 @@ export default function CommissionTracking() {
         format(new Date(c.created_at || ''), 'dd/MM/yyyy', { locale: ptBR }),
         affiliate?.referral_code || '-',
         order?.order_number || '-',
-        `R$ ${Number(c.order_total).toFixed(2)}`,
-        `${Number(c.commission_rate)}%`,
-        `R$ ${Number(c.commission_amount).toFixed(2)}`,
+        `R$ ${Number((c as any).order_total || c.amount || 0).toFixed(2)}`,
+        `${Number((c as any).commission_rate || c.commission_percent || 0)}%`,
+        `R$ ${Number(c.commission_amount || 0).toFixed(2)}`,
         c.status
       ];
     });
@@ -261,6 +261,8 @@ export default function CommissionTracking() {
                 {filteredCommissions?.map((commission) => {
                   const affiliate = commission.vip_affiliates as any;
                   const order = commission.orders as any;
+                  const orderTotal = (commission as any).order_total || commission.amount || 0;
+                  const commissionRate = (commission as any).commission_rate || commission.commission_percent || 0;
                   return (
                     <TableRow key={commission.id}>
                       <TableCell>
@@ -270,10 +272,10 @@ export default function CommissionTracking() {
                         {affiliate?.referral_code || '-'}
                       </TableCell>
                       <TableCell>{order?.order_number || '-'}</TableCell>
-                      <TableCell>R$ {Number(commission.order_total).toFixed(2)}</TableCell>
-                      <TableCell>{Number(commission.commission_rate)}%</TableCell>
+                      <TableCell>R$ {Number(orderTotal).toFixed(2)}</TableCell>
+                      <TableCell>{Number(commissionRate)}%</TableCell>
                       <TableCell className="font-semibold text-green-400">
-                        R$ {Number(commission.commission_amount).toFixed(2)}
+                        R$ {Number(commission.commission_amount || 0).toFixed(2)}
                       </TableCell>
                       <TableCell>{getStatusBadge(commission.status || 'pending')}</TableCell>
                       <TableCell>

@@ -321,7 +321,7 @@ const PayoutsManager = () => {
                           {commission.order_id?.slice(0, 8)}...
                         </TableCell>
                         <TableCell>
-                          R$ {commission.order_total.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                          R$ {((commission as any).order_total || commission.amount || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell className="text-green-400 font-bold">
                           R$ {commission.commission_amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
