@@ -52,32 +52,33 @@ interface PresentationData {
   updated_at: string;
 }
 
+// Configuração de cores por tier (Bronze, Prata, Ouro, Diamante - sem Platinum)
 const tierColors: Record<string, { gradient: string; bg: string; text: string }> = {
   bronze: { gradient: 'from-amber-600 to-amber-800', bg: 'bg-amber-500/10', text: 'text-amber-500' },
   silver: { gradient: 'from-slate-400 to-slate-600', bg: 'bg-slate-400/10', text: 'text-slate-400' },
+  prata: { gradient: 'from-slate-400 to-slate-600', bg: 'bg-slate-400/10', text: 'text-slate-400' },
   gold: { gradient: 'from-yellow-400 to-amber-500', bg: 'bg-yellow-500/10', text: 'text-yellow-500' },
   ouro: { gradient: 'from-yellow-400 to-amber-500', bg: 'bg-yellow-500/10', text: 'text-yellow-500' },
   diamond: { gradient: 'from-cyan-400 to-blue-500', bg: 'bg-cyan-400/10', text: 'text-cyan-400' },
-  platinum: { gradient: 'from-violet-400 to-purple-600', bg: 'bg-violet-400/10', text: 'text-violet-400' },
-  platina: { gradient: 'from-violet-400 to-purple-600', bg: 'bg-violet-400/10', text: 'text-violet-400' },
+  diamante: { gradient: 'from-cyan-400 to-blue-500', bg: 'bg-cyan-400/10', text: 'text-cyan-400' },
 };
 
 const tierIcons: Record<string, React.ReactNode> = {
   bronze: <Star className="h-4 w-4" />,
   silver: <Star className="h-4 w-4" />,
+  prata: <Star className="h-4 w-4" />,
   gold: <Crown className="h-4 w-4" />,
   ouro: <Crown className="h-4 w-4" />,
   diamond: <Diamond className="h-4 w-4" />,
-  platinum: <Diamond className="h-4 w-4" />,
-  platina: <Diamond className="h-4 w-4" />,
+  diamante: <Diamond className="h-4 w-4" />,
 };
 
+// Thresholds de pontos conforme especificação (Bronze 0-499, Prata 500-1999, Ouro 2000-9999, Diamante 10000+)
 const tierThresholds = [
   { tier: 'bronze', min: 0, max: 499 },
   { tier: 'silver', min: 500, max: 1999 },
-  { tier: 'gold', min: 2000, max: 4999 },
-  { tier: 'diamond', min: 5000, max: 9999 },
-  { tier: 'platinum', min: 10000, max: Infinity },
+  { tier: 'gold', min: 2000, max: 9999 },
+  { tier: 'diamond', min: 10000, max: Infinity },
 ];
 
 export default function VIPDashboard() {

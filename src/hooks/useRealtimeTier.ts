@@ -20,20 +20,20 @@ export interface TierInfo {
   availableBalance: number;
 }
 
-const TIER_ORDER = ['bronze', 'silver', 'gold', 'diamond', 'platinum'];
+// Apenas 4 tiers: Bronze, Prata, Ouro, Diamante (sem Platinum)
+const TIER_ORDER = ['bronze', 'silver', 'gold', 'diamond'];
 const TIER_ALIASES: Record<string, string> = {
   'ouro': 'gold',
   'prata': 'silver',
-  'platina': 'platinum',
   'diamante': 'diamond'
 };
 
+// Thresholds de pontos conforme especificação SKY BRASIL
 const TIER_POINTS_THRESHOLD: Record<string, number> = {
   'bronze': 0,
   'silver': 500,
   'gold': 2000,
-  'diamond': 5000,
-  'platinum': 10000
+  'diamond': 10000
 };
 
 const normalizeTier = (tier: string | null | undefined): string => {
@@ -49,8 +49,7 @@ const getTierLevel = (tier: string): number => {
 };
 
 const calculateTierFromPoints = (points: number): string => {
-  if (points >= 10000) return 'platinum';
-  if (points >= 5000) return 'diamond';
+  if (points >= 10000) return 'diamond';
   if (points >= 2000) return 'gold';
   if (points >= 500) return 'silver';
   return 'bronze';

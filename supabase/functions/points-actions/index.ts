@@ -15,14 +15,13 @@ const pointRanges = [
   { min: 1001, max: Infinity, label: 'Elite', categories: ['all'], maxValue: Infinity },
 ];
 
-// Calcular tier baseado em pontos (requisitos mais rigorosos)
+// Calcular tier baseado em pontos (Bronze 0-499, Prata 500-1999, Ouro 2000-9999, Diamante 10000+)
 // Nota: O tier real é calculado pela função SQL calculate_affiliate_tier()
 // que considera referrals, vendas E pontos. Esta função é apenas fallback.
 function calculateTier(totalPoints: number): string {
-  if (totalPoints >= 50000) return 'platinum';
-  if (totalPoints >= 20000) return 'diamond';
-  if (totalPoints >= 5000) return 'gold';
-  if (totalPoints >= 1000) return 'silver';
+  if (totalPoints >= 10000) return 'diamond';
+  if (totalPoints >= 2000) return 'gold';
+  if (totalPoints >= 500) return 'silver';
   return 'bronze';
 }
 
@@ -155,7 +154,7 @@ serve(async (req) => {
 
         const userTier = userPoints?.tier || 'bronze';
         const userBalance = userPoints?.current_balance || 0;
-        const tierOrder = ['bronze', 'silver', 'gold', 'diamond', 'platinum'];
+        const tierOrder = ['bronze', 'silver', 'gold', 'diamond'];
         const userTierIndex = tierOrder.indexOf(userTier);
         const currentRange = getPointRange(userBalance);
 
@@ -232,8 +231,8 @@ serve(async (req) => {
           );
         }
 
-        // Verificar tier
-        const tierOrder = ['bronze', 'silver', 'gold', 'diamond', 'platinum'];
+        // Verificar tier (sem platinum)
+        const tierOrder = ['bronze', 'silver', 'gold', 'diamond'];
         if (tierOrder.indexOf(userPoints.tier) < tierOrder.indexOf(reward.tier_required || 'bronze')) {
           return new Response(
             JSON.stringify({ success: false, error: 'Tier insuficiente para esta recompensa' }),

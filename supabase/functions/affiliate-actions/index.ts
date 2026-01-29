@@ -15,21 +15,24 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
 // ============= CONSTANTS =============
+// Comissões por tier (Bronze, Prata, Ouro, Diamante)
 const TIER_COMMISSION_RATES: Record<string, number> = {
   bronze: 10,
   silver: 12,
   gold: 15,
   diamond: 20,
-  platinum: 25,
 };
 
-// Requisitos MAIS RIGOROSOS para tiers
+// Requisitos para tiers conforme especificação SKY BRASIL
+// Bronze: 0 indicações, N/A vendas, 0-499 pts
+// Prata: 5+ indicações, R$500+ vendas, 500-1999 pts
+// Ouro: 15+ indicações, R$2000+ vendas, 2000-9999 pts  
+// Diamante: 50+ indicações, R$10000+ vendas, 10000+ pts
 const TIER_REQUIREMENTS: Record<string, { minReferrals: number; minSales: number; minPoints: number }> = {
   bronze: { minReferrals: 0, minSales: 0, minPoints: 0 },
-  silver: { minReferrals: 5, minSales: 500, minPoints: 1000 },
-  gold: { minReferrals: 15, minSales: 2000, minPoints: 5000 },
-  diamond: { minReferrals: 50, minSales: 10000, minPoints: 20000 },
-  platinum: { minReferrals: 100, minSales: 50000, minPoints: 50000 },
+  silver: { minReferrals: 5, minSales: 500, minPoints: 500 },
+  gold: { minReferrals: 15, minSales: 2000, minPoints: 2000 },
+  diamond: { minReferrals: 50, minSales: 10000, minPoints: 10000 },
 };
 
 const MIN_WITHDRAWAL = 50;
@@ -66,8 +69,8 @@ function calculateCommissionRate(tier: string, monthlyReferrals: number): number
 }
 
 function determineTier(referrals: number, sales: number, points: number): { tier: string; rate: number } {
-  // Ordem decrescente - verifica do mais alto para o mais baixo
-  const tiers = ['platinum', 'diamond', 'gold', 'silver', 'bronze'];
+  // Ordem decrescente - verifica do mais alto para o mais baixo (sem platinum)
+  const tiers = ['diamond', 'gold', 'silver', 'bronze'];
   
   for (const tier of tiers) {
     const req = TIER_REQUIREMENTS[tier];
