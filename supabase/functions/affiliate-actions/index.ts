@@ -270,7 +270,7 @@ serve(async (req) => {
             tier: 'bronze',
             commission_rate: 10,
             approved_at: new Date().toISOString(),
-            parent_affiliate_id: parentAffiliateId,
+            sponsor_id: parentAffiliateId,
           })
           .select()
           .single();

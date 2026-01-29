@@ -27,6 +27,9 @@ verify_jwt = false
 [functions.firecrawl-search]
 verify_jwt = false
 
+[functions.fix-mlm-structure]
+verify_jwt = true
+
 [functions.notify-affiliate-commission]
 verify_jwt = false
 
