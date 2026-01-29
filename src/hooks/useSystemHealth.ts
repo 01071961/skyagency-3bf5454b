@@ -17,8 +17,8 @@ export const useSystemHealth = () => {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('system_health_status')
+      // Use any to bypass type issues
+      const { data, error } = await (supabase.from('system_health_status') as any)
         .select('*')
         .order('service_name');
 
@@ -73,7 +73,7 @@ export const useSystemHealth = () => {
 
       // Check Storage
       const storageStart = Date.now();
-      const { data: buckets, error: storageError } = await supabase.storage.listBuckets();
+      const { error: storageError } = await supabase.storage.listBuckets();
       const storageTime = Date.now() - storageStart;
       await updateServiceStatus('storage', storageError ? 'degraded' : 'operational', storageTime, storageError?.message);
 
@@ -95,15 +95,14 @@ export const useSystemHealth = () => {
     serviceName: string,
     status: 'operational' | 'degraded' | 'down' | 'maintenance',
     responseTime: number,
-    errorMessage: string | null
+    errorMessage: string | null | undefined
   ) => {
     try {
-      await supabase
-        .from('system_health_status')
+      await (supabase.from('system_health_status') as any)
         .update({
           status,
           response_time_ms: responseTime,
-          error_message: errorMessage,
+          error_message: errorMessage || null,
           last_check_at: new Date().toISOString()
         })
         .eq('service_name', serviceName);

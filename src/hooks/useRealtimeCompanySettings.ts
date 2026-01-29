@@ -44,6 +44,26 @@ const DEFAULT_SETTINGS: Partial<CompanySettingsData> = {
   certificate_template: 'modern',
 };
 
+// Helper to parse company settings from key-value format
+function parseCompanySettings(rows: any[]): CompanySettingsData {
+  const settings: any = { id: '', ...DEFAULT_SETTINGS };
+  
+  for (const row of rows) {
+    if (row.setting_key && row.setting_value !== undefined) {
+      // Handle both string and object values
+      const value = typeof row.setting_value === 'object' 
+        ? row.setting_value 
+        : row.setting_value;
+      settings[row.setting_key] = value;
+      if (!settings.id && row.id) {
+        settings.id = row.id;
+      }
+    }
+  }
+  
+  return settings as CompanySettingsData;
+}
+
 export function useRealtimeCompanySettings() {
   const [settings, setSettings] = useState<CompanySettingsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,14 +74,13 @@ export function useRealtimeCompanySettings() {
       setLoading(true);
       const { data, error: fetchError } = await supabase
         .from('company_settings')
-        .select('*')
-        .limit(1)
-        .maybeSingle();
+        .select('*');
 
       if (fetchError) throw fetchError;
 
-      if (data) {
-        setSettings(data as CompanySettingsData);
+      if (data && data.length > 0) {
+        const parsedSettings = parseCompanySettings(data);
+        setSettings(parsedSettings);
       } else {
         // Return default settings if none exist
         setSettings({
@@ -96,16 +115,9 @@ export function useRealtimeCompanySettings() {
           schema: 'public',
           table: 'company_settings',
         },
-        (payload) => {
-          console.log('Company settings updated:', payload);
-          if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-            setSettings(payload.new as CompanySettingsData);
-          } else if (payload.eventType === 'DELETE') {
-            setSettings({
-              id: '',
-              ...DEFAULT_SETTINGS,
-            } as CompanySettingsData);
-          }
+        () => {
+          console.log('Company settings updated');
+          fetchSettings();
         }
       )
       .subscribe();

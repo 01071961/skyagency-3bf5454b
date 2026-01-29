@@ -167,10 +167,10 @@ export function useVIPSocialNetwork() {
           return next;
         });
       } else {
-        await supabase
-          .from('affiliate_post_likes')
+        await (supabase.from('affiliate_post_likes') as any)
           .insert({
             post_id: postId,
+            user_id: myProfile.userId,
             affiliate_id: myProfile.id
           });
 
