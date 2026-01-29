@@ -20,7 +20,7 @@ interface Enrollment {
   product_id: string;
   status: string;
   progress_percent: number;
-  enrolled_at: string;
+  created_at: string;
   expires_at: string | null;
   product: {
     id: string;
