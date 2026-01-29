@@ -90,8 +90,8 @@ const CampaignManager = () => {
       if (campaignsRes.error) throw campaignsRes.error;
       if (espRes.error) throw espRes.error;
 
-      setCampaigns(campaignsRes.data || []);
-      setEspConfigs(espRes.data || []);
+      setCampaigns((campaignsRes.data || []) as any);
+      setEspConfigs((espRes.data || []) as any);
       
       // Remove duplicates by email
       if (contactsRes.data) {

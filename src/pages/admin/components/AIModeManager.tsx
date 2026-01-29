@@ -34,21 +34,18 @@ import { AIMetricsDashboard, AddLearningDialog, AIActionHistory } from "./ai";
 
 interface ModeConfig {
   id: string;
-  mode: string;
-  is_enabled: boolean;
-  priority: number;
-  prompt_template: string;
-  trigger_keywords: string[];
-  confidence_threshold: number;
-  description: string;
+  mode_name: string;
+  is_active: boolean;
+  temperature: number;
+  max_tokens: number;
+  system_prompt: string;
+  settings: any;
 }
 
 interface AIFeedback {
   id: string;
-  message_id: string;
-  conversation_id: string;
-  rating: number;
-  resolved: boolean;
+  message_id: string | null;
+  rating: number | null;
   comment: string | null;
   created_at: string;
 }
@@ -57,9 +54,19 @@ interface AILearning {
   id: string;
   pattern: string;
   category: string;
-  success_score: number;
-  fail_score: number;
+  response: string;
+  confidence: number;
+  success_rate: number;
   is_active: boolean;
+}
+
+interface ChatConversation {
+  current_mode?: string;
+  ai_confidence?: number;
+  escalation_reason?: string;
+  rating?: number;
+  status: string;
+  created_at: string;
 }
 
 const modeIcons: Record<string, React.ReactNode> = {
@@ -83,15 +90,6 @@ const modeLabels: Record<string, string> = {
   handoff_human: "Transferência",
 };
 
-interface ChatConversation {
-  current_mode?: string;
-  ai_confidence?: number;
-  escalation_reason?: string;
-  rating?: number;
-  status: string;
-  created_at: string;
-}
-
 export function AIModeManager() {
   const [modes, setModes] = useState<ModeConfig[]>([]);
   const [feedback, setFeedback] = useState<AIFeedback[]>([]);
@@ -112,10 +110,21 @@ export function AIModeManager() {
       const { data: modesData, error: modesError } = await supabase
         .from("ai_mode_config")
         .select("*")
-        .order("priority");
+        .order("mode_name");
 
       if (modesError) throw modesError;
-      setModes(modesData || []);
+      
+      // Map to expected interface
+      const mappedModes: ModeConfig[] = (modesData || []).map(m => ({
+        id: m.id,
+        mode_name: m.mode_name,
+        is_active: m.is_active ?? true,
+        temperature: m.temperature ?? 0.7,
+        max_tokens: m.max_tokens ?? 1000,
+        system_prompt: m.system_prompt || '',
+        settings: m.settings || {}
+      }));
+      setModes(mappedModes);
 
       // Load recent feedback
       const { data: feedbackData, error: feedbackError } = await supabase
@@ -125,18 +134,34 @@ export function AIModeManager() {
         .limit(100);
 
       if (!feedbackError) {
-        setFeedback(feedbackData || []);
+        const mappedFeedback: AIFeedback[] = (feedbackData || []).map(f => ({
+          id: f.id,
+          message_id: f.message_id,
+          rating: f.rating,
+          comment: f.comment,
+          created_at: f.created_at || new Date().toISOString()
+        }));
+        setFeedback(mappedFeedback);
       }
 
       // Load learnings
       const { data: learningsData, error: learningsError } = await supabase
         .from("ai_learnings")
         .select("*")
-        .order("success_score", { ascending: false })
+        .order("success_rate", { ascending: false })
         .limit(50);
 
       if (!learningsError) {
-        setLearnings(learningsData || []);
+        const mappedLearnings: AILearning[] = (learningsData || []).map(l => ({
+          id: l.id,
+          pattern: l.pattern,
+          category: l.category,
+          response: l.response,
+          confidence: l.confidence ?? 0.5,
+          success_rate: l.success_rate ?? 0,
+          is_active: l.is_active ?? true
+        }));
+        setLearnings(mappedLearnings);
       }
 
       // Load conversations for metrics
@@ -146,7 +171,7 @@ export function AIModeManager() {
         .order("created_at", { ascending: false })
         .limit(100);
 
-      setConversations(conversationsData || []);
+      setConversations((conversationsData || []) as ChatConversation[]);
     } catch (error) {
       console.error("Error loading AI data:", error);
       toast.error("Erro ao carregar configurações da IA");
@@ -159,13 +184,13 @@ export function AIModeManager() {
     try {
       const { error } = await supabase
         .from("ai_mode_config")
-        .update({ is_enabled: enabled })
+        .update({ is_active: enabled })
         .eq("id", modeId);
 
       if (error) throw error;
 
       setModes(prev => prev.map(m => 
-        m.id === modeId ? { ...m, is_enabled: enabled } : m
+        m.id === modeId ? { ...m, is_active: enabled } : m
       ));
       toast.success(`Modo ${enabled ? 'ativado' : 'desativado'}`);
     } catch (error) {
@@ -179,10 +204,10 @@ export function AIModeManager() {
       const { error } = await supabase
         .from("ai_mode_config")
         .update({
-          prompt_template: config.prompt_template,
-          trigger_keywords: config.trigger_keywords,
-          confidence_threshold: config.confidence_threshold,
-          description: config.description,
+          system_prompt: config.system_prompt,
+          temperature: config.temperature,
+          max_tokens: config.max_tokens,
+          settings: config.settings,
         })
         .eq("id", config.id);
 
@@ -200,8 +225,7 @@ export function AIModeManager() {
   const getFeedbackStats = () => {
     const positive = feedback.filter(f => f.rating === 1).length;
     const negative = feedback.filter(f => f.rating === -1).length;
-    const resolved = feedback.filter(f => f.resolved).length;
-    return { positive, negative, resolved, total: feedback.length };
+    return { positive, negative, total: feedback.length };
   };
 
   const stats = getFeedbackStats();
@@ -230,7 +254,7 @@ export function AIModeManager() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Modos Ativos</p>
-                  <p className="text-2xl font-bold">{modes.filter(m => m.is_enabled).length}/{modes.length}</p>
+                  <p className="text-2xl font-bold">{modes.filter(m => m.is_active).length}/{modes.length}</p>
                 </div>
               </div>
             </CardContent>
@@ -312,9 +336,9 @@ export function AIModeManager() {
 
         <TabsContent value="metrics" className="mt-6">
           <AIMetricsDashboard 
-            feedback={feedback}
-            conversations={conversations}
-            learnings={learnings}
+            feedback={feedback as any}
+            conversations={conversations as any}
+            learnings={learnings as any}
           />
         </TabsContent>
 
@@ -327,42 +351,30 @@ export function AIModeManager() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className={`border ${mode.is_enabled ? 'border-primary/30' : 'border-muted'}`}>
+                <Card className={`border ${mode.is_active ? 'border-primary/30' : 'border-muted'}`}>
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${modeColors[mode.mode]}`}>
-                          {modeIcons[mode.mode]}
+                        <div className={`p-2 rounded-lg ${modeColors[mode.mode_name] || 'bg-gray-500/20'}`}>
+                          {modeIcons[mode.mode_name] || <Bot className="h-5 w-5" />}
                         </div>
                         <div>
-                          <CardTitle className="text-lg">{modeLabels[mode.mode]}</CardTitle>
+                          <CardTitle className="text-lg">{modeLabels[mode.mode_name] || mode.mode_name}</CardTitle>
                           <CardDescription className="text-sm">
-                            {mode.description?.slice(0, 50)}...
+                            {mode.system_prompt?.slice(0, 50)}...
                           </CardDescription>
                         </div>
                       </div>
                       <Switch
-                        checked={mode.is_enabled}
+                        checked={mode.is_active}
                         onCheckedChange={(checked) => toggleMode(mode.id, checked)}
                       />
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {mode.trigger_keywords?.slice(0, 5).map((keyword, i) => (
-                        <Badge key={i} variant="outline" className="text-xs">
-                          {keyword}
-                        </Badge>
-                      ))}
-                      {mode.trigger_keywords?.length > 5 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{mode.trigger_keywords.length - 5}
-                        </Badge>
-                      )}
-                    </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-muted-foreground">
-                        Confiança mín: {(mode.confidence_threshold * 100).toFixed(0)}%
+                        Temp: {mode.temperature} | Tokens: {mode.max_tokens}
                       </span>
                       <Dialog open={editDialogOpen && selectedMode?.id === mode.id} onOpenChange={(open) => {
                         setEditDialogOpen(open);
@@ -377,8 +389,8 @@ export function AIModeManager() {
                         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle className="flex items-center gap-2">
-                              {modeIcons[mode.mode]}
-                              Configurar Modo: {modeLabels[mode.mode]}
+                              {modeIcons[mode.mode_name] || <Bot className="h-5 w-5" />}
+                              Configurar Modo: {modeLabels[mode.mode_name] || mode.mode_name}
                             </DialogTitle>
                             <DialogDescription>
                               Ajuste o comportamento da IA para este modo
@@ -431,16 +443,9 @@ export function AIModeManager() {
                           {f.comment || (f.rating === 1 ? 'Resposta útil' : 'Resposta não ajudou')}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {f.resolved && (
-                          <Badge variant="outline" className="text-green-500 border-green-500/30">
-                            Resolvido
-                          </Badge>
-                        )}
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(f.created_at).toLocaleDateString('pt-BR')}
-                        </span>
-                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(f.created_at).toLocaleDateString('pt-BR')}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -475,31 +480,24 @@ export function AIModeManager() {
                   {learnings.map((l) => (
                     <div key={l.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <div className="flex-1">
-                        <p className="font-medium">{l.pattern}</p>
-                        <div className="flex items-center gap-4 mt-1">
-                          <Badge variant="outline">{l.category}</Badge>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <TrendingUp className="h-3 w-3 text-green-500" />
-                            {l.success_score}
-                          </span>
-                          <span className="text-xs text-muted-foreground flex items-center gap-1">
-                            <TrendingDown className="h-3 w-3 text-red-500" />
-                            {l.fail_score}
+                        <p className="font-medium text-sm">{l.pattern}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs">{l.category}</Badge>
+                          <span className="text-xs text-muted-foreground">
+                            Confiança: {(l.confidence * 100).toFixed(0)}%
                           </span>
                         </div>
                       </div>
-                      <Switch
-                        checked={l.is_active}
-                        onCheckedChange={async (checked) => {
-                          await supabase
-                            .from("ai_learnings")
-                            .update({ is_active: checked })
-                            .eq("id", l.id);
-                          setLearnings(prev => prev.map(learning => 
-                            learning.id === l.id ? { ...learning, is_active: checked } : learning
-                          ));
-                        }}
-                      />
+                      <div className="flex items-center gap-2">
+                        {l.success_rate > 0.5 ? (
+                          <TrendingUp className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <TrendingDown className="h-4 w-4 text-red-500" />
+                        )}
+                        <span className="text-sm font-medium">
+                          {(l.success_rate * 100).toFixed(0)}%
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -516,84 +514,56 @@ export function AIModeManager() {
   );
 }
 
-// Edit form component
-function ModeEditForm({ 
-  mode, 
-  onSave, 
-  onCancel 
-}: { 
-  mode: ModeConfig; 
-  onSave: (config: ModeConfig) => void; 
+interface ModeEditFormProps {
+  mode: ModeConfig;
+  onSave: (config: ModeConfig) => void;
   onCancel: () => void;
-}) {
-  const [config, setConfig] = useState(mode);
-  const [keywordsText, setKeywordsText] = useState(mode.trigger_keywords?.join(', ') || '');
+}
 
-  const handleSave = () => {
-    onSave({
-      ...config,
-      trigger_keywords: keywordsText.split(',').map(k => k.trim()).filter(Boolean),
-    });
-  };
+function ModeEditForm({ mode, onSave, onCancel }: ModeEditFormProps) {
+  const [config, setConfig] = useState(mode);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <Label>Descrição</Label>
-        <Input
-          value={config.description || ''}
-          onChange={(e) => setConfig({ ...config, description: e.target.value })}
-          placeholder="Descrição breve do modo"
-        />
-      </div>
-
-      <div>
+    <div className="space-y-4 mt-4">
+      <div className="space-y-2">
         <Label>Prompt do Sistema</Label>
         <Textarea
-          value={config.prompt_template}
-          onChange={(e) => setConfig({ ...config, prompt_template: e.target.value })}
-          rows={8}
-          placeholder="Instruções para a IA neste modo..."
+          value={config.system_prompt}
+          onChange={(e) => setConfig({ ...config, system_prompt: e.target.value })}
+          rows={6}
+          placeholder="Instruções para a IA..."
         />
-        <p className="text-xs text-muted-foreground mt-1">
-          Este texto será usado como base para o comportamento da IA neste modo.
-        </p>
       </div>
 
-      <div>
-        <Label>Palavras-chave de Gatilho</Label>
-        <Textarea
-          value={keywordsText}
-          onChange={(e) => setKeywordsText(e.target.value)}
-          rows={2}
-          placeholder="preço, plano, contratar, upgrade..."
-        />
-        <p className="text-xs text-muted-foreground mt-1">
-          Separe as palavras-chave por vírgula.
-        </p>
-      </div>
-
-      <div>
-        <Label>Confiança Mínima: {(config.confidence_threshold * 100).toFixed(0)}%</Label>
+      <div className="space-y-2">
+        <Label>Temperatura: {config.temperature}</Label>
         <Slider
-          value={[config.confidence_threshold * 100]}
-          onValueChange={([value]) => setConfig({ ...config, confidence_threshold: value / 100 })}
-          min={30}
-          max={95}
-          step={5}
-          className="mt-2"
+          value={[config.temperature]}
+          onValueChange={([v]) => setConfig({ ...config, temperature: v })}
+          min={0}
+          max={1}
+          step={0.1}
         />
-        <p className="text-xs text-muted-foreground mt-1">
-          A IA só ativará este modo se a confiança for maior que este valor.
+        <p className="text-xs text-muted-foreground">
+          Valores mais altos = respostas mais criativas
         </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Max Tokens</Label>
+        <Input
+          type="number"
+          value={config.max_tokens}
+          onChange={(e) => setConfig({ ...config, max_tokens: parseInt(e.target.value) || 1000 })}
+        />
       </div>
 
       <div className="flex justify-end gap-2 pt-4">
         <Button variant="outline" onClick={onCancel}>
           Cancelar
         </Button>
-        <Button onClick={handleSave}>
-          Salvar Configuração
+        <Button onClick={() => onSave(config)}>
+          Salvar
         </Button>
       </div>
     </div>

@@ -83,7 +83,12 @@ const Sales = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      // Cast pricing_type to expected union type
+      const typedProducts = (data || []).map(p => ({
+        ...p,
+        pricing_type: (p.pricing_type || 'one_time') as 'one_time' | 'subscription' | 'free'
+      }));
+      setProducts(typedProducts);
     } catch (error) {
       console.error('Error loading products:', error);
       toast({

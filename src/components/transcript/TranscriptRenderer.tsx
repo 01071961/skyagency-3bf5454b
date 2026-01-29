@@ -95,13 +95,19 @@ export function TranscriptRenderer({ productId, showDownload = true }: Transcrip
         `)
         .eq('user_id', user?.id);
       
-      if (productId) {
-        query = query.eq('product_id', productId);
-      }
-      
       const { data, error } = await query.order('created_at', { ascending: true });
       if (error) throw error;
-      return data as unknown as ModuleHistory[];
+      
+      // Map data to expected interface
+      return (data || []).map((item: any) => ({
+        id: item.id,
+        modulo_id: item.module_id || item.modulo_id,
+        media_final: item.score || item.media_final,
+        situacao: item.completed_at ? 'aprovado' : 'cursando',
+        conceito: null,
+        frequencia: null,
+        module: item.module || null
+      })) as ModuleHistory[];
     },
     enabled: !!user?.id
   });

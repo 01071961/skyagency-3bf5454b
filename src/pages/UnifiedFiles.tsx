@@ -101,15 +101,15 @@ export default function UnifiedFiles() {
 
   const loadUserData = async () => {
     try {
-      // Load profile
+      // Load profile - only select existing columns
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('plan, drive_connected, storage_used, default_storage')
+        .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
       
       setProfile(profileData || { drive_connected: false });
-      setUsedStorage(profileData?.storage_used || 0);
+      setUsedStorage((profileData as any)?.storage_used || 0);
 
       // Check user roles
       const { data: rolesData } = await supabase
@@ -118,24 +118,24 @@ export default function UnifiedFiles() {
         .eq('user_id', user?.id);
 
       const roles = rolesData?.map(r => r.role) || [];
-      const isAdmin = roles.includes('admin') || roles.includes('owner');
+      const isAdmin = roles.includes('admin' as any) || roles.includes('owner' as any);
       
       // Check VIP status
       const { data: affiliateData } = await supabase
         .from('vip_affiliates')
         .select('status, tier')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
 
       const isVip = affiliateData?.status === 'approved' || 
-                    profileData?.plan === 'gold' || 
-                    profileData?.plan === 'platinum';
+                    (profileData as any)?.plan === 'gold' || 
+                    (profileData as any)?.plan === 'platinum';
 
       setUserRole({
         role: isAdmin ? 'admin' : isVip ? 'vip' : 'user',
         isVip,
         isAdmin,
-        plan: profileData?.plan
+        plan: (profileData as any)?.plan
       });
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -146,26 +146,29 @@ export default function UnifiedFiles() {
 
   const loadInternalFiles = async () => {
     try {
-      const { data: filesData } = await supabase
-        .from('user_files')
-        .select('*')
-        .eq('user_id', user?.id)
-        .eq('storage_type', 'internal')
-        .order('created_at', { ascending: false });
+      // Use storage API to list files instead of non-existent table
+      const { data: storageFiles, error } = await supabase.storage
+        .from('user-files')
+        .list(user?.id || '', { limit: 100 });
 
-      if (filesData) {
-        const formatted: FileItem[] = filesData.map(f => ({
-          id: f.id,
-          name: f.file_name,
-          size: f.file_size,
-          type: f.file_type,
-          source: 'internal',
+      if (error) {
+        console.error('Storage error:', error);
+        return;
+      }
+
+      if (storageFiles) {
+        const formatted: FileItem[] = storageFiles.map(f => ({
+          id: f.id || f.name,
+          name: f.name,
+          size: (f.metadata as any)?.size || 0,
+          type: (f.metadata as any)?.mimetype,
+          source: 'internal' as const,
           created_at: f.created_at,
-          path: f.file_path,
+          path: `${user?.id}/${f.name}`,
         }));
         setInternalFiles(formatted);
         
-        const total = filesData.reduce((acc, f) => acc + (f.file_size || 0), 0);
+        const total = formatted.reduce((acc, f) => acc + (f.size || 0), 0);
         setUsedStorage(total);
       }
     } catch (error) {
@@ -211,7 +214,7 @@ export default function UnifiedFiles() {
           name: f.name,
           size: parseInt(f.size) || 0,
           type: f.mimeType,
-          source: 'drive',
+          source: 'drive' as const,
           created_at: f.modifiedTime,
           webViewLink: f.webViewLink,
         }));
@@ -241,19 +244,6 @@ export default function UnifiedFiles() {
           .upload(filePath, file, { upsert: false });
 
         if (uploadError) throw uploadError;
-
-        const { error: dbError } = await supabase
-          .from('user_files')
-          .insert({
-            user_id: user.id,
-            file_name: file.name,
-            file_path: filePath,
-            file_size: file.size,
-            file_type: file.type,
-            storage_type: 'internal',
-          });
-
-        if (dbError) throw dbError;
 
         toast.success('Arquivo enviado com sucesso!');
         loadInternalFiles();
@@ -320,11 +310,6 @@ export default function UnifiedFiles() {
         await supabase.storage
           .from('user-files')
           .remove([file.path]);
-
-        await supabase
-          .from('user_files')
-          .delete()
-          .eq('id', file.id);
 
         toast.success('Arquivo excluído');
         loadInternalFiles();
@@ -503,180 +488,123 @@ export default function UnifiedFiles() {
         </Card>
       </div>
 
-      {/* VIP Features Banner */}
-      {userRole.isVip && (
-        <Card className="bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-yellow-500/10 border-amber-500/30">
-          <CardContent className="py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Crown className="h-5 w-5 text-amber-500" />
-              <div>
-                <p className="font-medium">Acesso VIP Ativo</p>
-                <p className="text-sm text-muted-foreground">Armazenamento ilimitado no Drive + compartilhamento na rede</p>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => navigate('/vip/network')}>
-              <Share2 className="h-4 w-4 mr-2" />
-              Rede VIP
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Upload Section */}
       <Card>
-        <CardContent className="py-4">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Upload className="h-5 w-5 text-muted-foreground" />
-                <span className="font-medium">Enviar novo arquivo</span>
-              </div>
-              
-              <div className="flex items-center gap-2 sm:ml-auto">
-                <input
-                  type="file"
-                  id="file-upload"
-                  className="hidden"
-                  onChange={handleUpload}
-                  disabled={uploading}
-                />
-                <label htmlFor="file-upload">
-                  <Button asChild disabled={uploading} className="cursor-pointer">
-                    <span>{uploading ? 'Enviando...' : 'Escolher Arquivo'}</span>
-                  </Button>
-                </label>
-              </div>
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex-1">
+              <h3 className="font-medium mb-1">Enviar Arquivo</h3>
+              <p className="text-sm text-muted-foreground">
+                Escolha onde salvar seu arquivo
+              </p>
             </div>
-            
-            {/* Storage destination selection */}
-            <div className="flex flex-wrap items-center gap-3 pt-2 border-t">
-              <span className="text-sm text-muted-foreground">Salvar em:</span>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant={uploadDest === 'internal' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setUploadDest('internal')}
-                >
-                  <HardDrive className="h-4 w-4 mr-1" />
-                  Interno (15GB)
+            <div className="flex items-center gap-2">
+              <Button
+                variant={uploadDest === 'internal' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setUploadDest('internal')}
+              >
+                <HardDrive className="h-4 w-4 mr-2" />
+                Interno
+              </Button>
+              <Button
+                variant={uploadDest === 'drive' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setUploadDest('drive')}
+                disabled={!driveConnected}
+              >
+                <Cloud className="h-4 w-4 mr-2" />
+                Drive
+              </Button>
+            </div>
+            <div>
+              <input
+                type="file"
+                id="file-upload"
+                className="hidden"
+                onChange={handleUpload}
+                disabled={uploading}
+              />
+              <label htmlFor="file-upload">
+                <Button asChild disabled={uploading}>
+                  <span>
+                    <Upload className="h-4 w-4 mr-2" />
+                    {uploading ? 'Enviando...' : 'Upload'}
+                  </span>
                 </Button>
-                <Button
-                  variant={uploadDest === 'drive' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => driveConnected ? setUploadDest('drive') : handleConnectDrive()}
-                  disabled={!driveConnected && connectingDrive}
-                >
-                  <Cloud className="h-4 w-4 mr-1" />
-                  Google Drive {!driveConnected && '(conectar)'}
-                </Button>
-              </div>
+              </label>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Buscar arquivos..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-10"
-        />
-      </div>
+      {/* Files List */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Arquivos</CardTitle>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9 w-64"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="all">
+            <TabsList>
+              <TabsTrigger value="all">Todos ({allFiles.length})</TabsTrigger>
+              <TabsTrigger value="internal">Interno ({filteredInternal.length})</TabsTrigger>
+              <TabsTrigger value="drive">Drive ({filteredDrive.length})</TabsTrigger>
+            </TabsList>
 
-      {/* Files Tabs */}
-      <Tabs defaultValue="all" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="all">
-            Todos ({allFiles.length})
-          </TabsTrigger>
-          <TabsTrigger value="internal">
-            <HardDrive className="h-4 w-4 mr-1" />
-            Interno ({filteredInternal.length})
-          </TabsTrigger>
-          <TabsTrigger value="drive" disabled={!driveConnected}>
-            <Cloud className="h-4 w-4 mr-1" />
-            Drive ({filteredDrive.length})
-          </TabsTrigger>
-        </TabsList>
+            <TabsContent value="all" className="mt-4">
+              <FileList 
+                files={allFiles} 
+                onDownload={handleDownload} 
+                onDelete={setFileToDelete}
+                getFileIcon={getFileIcon}
+                formatFileSize={formatFileSize}
+              />
+            </TabsContent>
+            <TabsContent value="internal" className="mt-4">
+              <FileList 
+                files={filteredInternal} 
+                onDownload={handleDownload} 
+                onDelete={setFileToDelete}
+                getFileIcon={getFileIcon}
+                formatFileSize={formatFileSize}
+              />
+            </TabsContent>
+            <TabsContent value="drive" className="mt-4">
+              <FileList 
+                files={filteredDrive} 
+                onDownload={handleDownload} 
+                onDelete={setFileToDelete}
+                getFileIcon={getFileIcon}
+                formatFileSize={formatFileSize}
+              />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
 
-        {['all', 'internal', 'drive'].map((tab) => (
-          <TabsContent key={tab} value={tab} className="space-y-2">
-            {(tab === 'all' ? allFiles : tab === 'internal' ? filteredInternal : filteredDrive).length === 0 ? (
-              <Card className="py-12 text-center">
-                <FolderOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  {tab === 'drive' && !driveConnected 
-                    ? 'Conecte seu Google Drive para ver seus arquivos' 
-                    : 'Nenhum arquivo encontrado'}
-                </p>
-              </Card>
-            ) : (
-              <div className="grid gap-2">
-                {(tab === 'all' ? allFiles : tab === 'internal' ? filteredInternal : filteredDrive).map((file) => {
-                  const FileIcon = getFileIcon(file.type);
-                  return (
-                    <motion.div
-                      key={`${file.source}-${file.id}`}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                    >
-                      <Card className="hover:bg-muted/50 transition-colors">
-                        <CardContent className="py-3 flex items-center gap-4">
-                          <div className={`p-2 rounded-lg ${file.source === 'drive' ? 'bg-blue-500/10' : 'bg-primary/10'}`}>
-                            <FileIcon className={`h-5 w-5 ${file.source === 'drive' ? 'text-blue-500' : 'text-primary'}`} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">{file.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatFileSize(file.size)} • {file.source === 'drive' ? 'Google Drive' : 'Interno'}
-                              {file.created_at && ` • ${new Date(file.created_at).toLocaleDateString('pt-BR')}`}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDownload(file)}
-                            >
-                              {file.source === 'drive' ? <ExternalLink className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-destructive hover:text-destructive"
-                              onClick={() => setFileToDelete(file)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-        ))}
-      </Tabs>
-
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation */}
       <AlertDialog open={!!fileToDelete} onOpenChange={() => setFileToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir arquivo?</AlertDialogTitle>
             <AlertDialogDescription>
-              {fileToDelete?.source === 'drive' 
-                ? 'O arquivo será movido para a lixeira do Google Drive.'
-                : 'Esta ação não pode ser desfeita. O arquivo será removido permanentemente.'}
+              Esta ação não pode ser desfeita. O arquivo "{fileToDelete?.name}" será removido permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={() => fileToDelete && handleDelete(fileToDelete)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
@@ -685,6 +613,71 @@ export default function UnifiedFiles() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+}
+
+interface FileListProps {
+  files: FileItem[];
+  onDownload: (file: FileItem) => void;
+  onDelete: (file: FileItem) => void;
+  getFileIcon: (type?: string) => typeof FileText;
+  formatFileSize: (bytes: number) => string;
+}
+
+function FileList({ files, onDownload, onDelete, getFileIcon, formatFileSize }: FileListProps) {
+  if (files.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <FolderOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+        <p>Nenhum arquivo encontrado</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {files.map((file) => {
+        const Icon = getFileIcon(file.type);
+        return (
+          <div
+            key={file.id}
+            className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-muted">
+                <Icon className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="font-medium">{file.name}</p>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>{formatFileSize(file.size)}</span>
+                  <span>•</span>
+                  <Badge variant="outline" className="text-xs">
+                    {file.source === 'drive' ? (
+                      <><Cloud className="h-3 w-3 mr-1" /> Drive</>
+                    ) : (
+                      <><HardDrive className="h-3 w-3 mr-1" /> Interno</>
+                    )}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => onDownload(file)}>
+                {file.source === 'drive' ? (
+                  <ExternalLink className="h-4 w-4" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => onDelete(file)}>
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
