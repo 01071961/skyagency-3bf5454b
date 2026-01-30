@@ -3735,7 +3735,7 @@ export type Database = {
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
     }
     Enums: {
-      affiliate_tier: "bronze" | "silver" | "gold" | "platinum" | "diamond"
+      affiliate_tier: "bronze" | "silver" | "gold" | "diamond"
       app_role: "user" | "streamer" | "admin" | "owner" | "editor"
       enrollment_status: "active" | "completed" | "cancelled" | "expired"
       order_status: "pending" | "paid" | "cancelled" | "refunded" | "expired"
@@ -3873,7 +3873,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      affiliate_tier: ["bronze", "silver", "gold", "platinum", "diamond"],
+      affiliate_tier: ["bronze", "silver", "gold", "diamond"],
       app_role: ["user", "streamer", "admin", "owner", "editor"],
       enrollment_status: ["active", "completed", "cancelled", "expired"],
       order_status: ["pending", "paid", "cancelled", "refunded", "expired"],
