@@ -34,7 +34,7 @@ const PLANS: Plan[] = [
     tier: 'bronze',
     price: 30,
     period: 'mês',
-    priceId: 'price_bronze_monthly', // Configure no Stripe Dashboard
+    priceId: 'price_bronze_monthly',
     icon: Shield,
     gradient: 'from-amber-700 to-amber-900',
     features: [
@@ -51,7 +51,7 @@ const PLANS: Plan[] = [
     tier: 'silver',
     price: 75,
     period: 'mês',
-    priceId: 'price_silver_monthly', // Configure no Stripe Dashboard
+    priceId: 'price_silver_monthly',
     icon: Zap,
     gradient: 'from-slate-400 to-slate-600',
     features: [
@@ -60,7 +60,6 @@ const PLANS: Plan[] = [
       'Templates adicionais',
       'Suporte prioritário',
       'Comissões aumentadas (12%)',
-      'Relatórios de vendas',
     ]
   },
   {
@@ -69,7 +68,7 @@ const PLANS: Plan[] = [
     tier: 'gold',
     price: 97,
     period: 'mês',
-    priceId: 'price_gold_monthly', // Configure no Stripe Dashboard
+    priceId: 'price_gold_monthly',
     icon: Crown,
     gradient: 'from-amber-500 to-orange-600',
     features: [
@@ -82,24 +81,42 @@ const PLANS: Plan[] = [
     ]
   },
   {
+    id: 'platinum',
+    name: 'Platina',
+    tier: 'platinum',
+    price: 147,
+    period: 'mês',
+    priceId: 'price_platinum_monthly',
+    icon: Sparkles,
+    gradient: 'from-purple-500 to-violet-600',
+    popular: true,
+    features: [
+      'Tudo do Ouro +',
+      'Templates exclusivos',
+      'Armazenamento expandido',
+      'Relatórios avançados',
+      'Suporte VIP dedicado',
+      'Comissões aumentadas (18%)',
+      'Badge Platina no perfil',
+    ]
+  },
+  {
     id: 'diamond',
     name: 'Diamante',
     tier: 'diamond',
     price: 197,
     period: 'mês',
-    priceId: 'price_diamond_monthly', // Configure no Stripe Dashboard
+    priceId: 'price_diamond_monthly',
     icon: Star,
     gradient: 'from-cyan-500 to-blue-600',
-    popular: true,
     features: [
-      'Tudo do Ouro +',
-      'Templates exclusivos',
-      'Armazenamento ilimitado',
+      'Tudo do Platina +',
       'API de integração',
       'Mentoria mensal',
       'Comissões máximas (20%)',
-      'Badge exclusiva no perfil',
+      'Badge Diamante exclusiva',
       'Acesso beta a novidades',
+      'Armazenamento ilimitado',
     ]
   }
 ];
@@ -287,7 +304,7 @@ export default function VIPBilling() {
       )}
 
       {/* Plans Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
         {PLANS.map((plan, index) => {
           const Icon = plan.icon;
           const isCurrent = isCurrentPlan(plan.tier);

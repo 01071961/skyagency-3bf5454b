@@ -83,6 +83,24 @@ export const TIER_CONFIG: Record<string, TierConfig> = {
     minReferralSales: 2000,
     commissionRate: 15,
     minPoints: 2000,
+    maxPoints: 4999,
+    mlmRates: [5, 2, 1, 0.5],
+  },
+  platinum: {
+    key: 'platinum',
+    label: 'Platinum',
+    labelPT: 'Platina',
+    icon: '💠',
+    emoji: '💠',
+    color: 'from-purple-500 to-violet-600',
+    gradient: 'from-purple-500 to-violet-600',
+    bgColor: 'bg-purple-500/10',
+    textColor: 'text-purple-500',
+    borderColor: 'border-purple-500/30',
+    minReferrals: 30,
+    minReferralSales: 5000,
+    commissionRate: 18,
+    minPoints: 5000,
     maxPoints: 9999,
     mlmRates: [5, 2, 1, 0.5],
   },
@@ -107,7 +125,7 @@ export const TIER_CONFIG: Record<string, TierConfig> = {
 };
 
 // Ordem dos tiers para comparação
-export const TIER_ORDER = ['bronze', 'silver', 'gold', 'diamond'] as const;
+export const TIER_ORDER = ['bronze', 'silver', 'gold', 'platinum', 'diamond'] as const;
 export type TierKey = typeof TIER_ORDER[number];
 
 // Aliases em português
@@ -117,6 +135,8 @@ export const TIER_ALIASES: Record<string, TierKey> = {
   'silver': 'silver',
   'ouro': 'gold',
   'gold': 'gold',
+  'platina': 'platinum',
+  'platinum': 'platinum',
   'diamante': 'diamond',
   'diamond': 'diamond',
 };
