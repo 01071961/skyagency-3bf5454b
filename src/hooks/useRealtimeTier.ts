@@ -20,11 +20,12 @@ export interface TierInfo {
   availableBalance: number;
 }
 
-// Apenas 4 tiers: Bronze, Prata, Ouro, Diamante (sem Platinum)
-const TIER_ORDER = ['bronze', 'silver', 'gold', 'diamond'];
+// 5 tiers: Bronze, Prata, Ouro, Platina, Diamante
+const TIER_ORDER = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
 const TIER_ALIASES: Record<string, string> = {
   'ouro': 'gold',
   'prata': 'silver',
+  'platina': 'platinum',
   'diamante': 'diamond'
 };
 
@@ -33,6 +34,7 @@ const TIER_POINTS_THRESHOLD: Record<string, number> = {
   'bronze': 0,
   'silver': 500,
   'gold': 2000,
+  'platinum': 5000,
   'diamond': 10000
 };
 
@@ -50,6 +52,7 @@ const getTierLevel = (tier: string): number => {
 
 const calculateTierFromPoints = (points: number): string => {
   if (points >= 10000) return 'diamond';
+  if (points >= 5000) return 'platinum';
   if (points >= 2000) return 'gold';
   if (points >= 500) return 'silver';
   return 'bronze';

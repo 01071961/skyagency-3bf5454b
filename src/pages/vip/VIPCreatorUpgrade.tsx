@@ -213,7 +213,7 @@ export default function VIPCreatorUpgrade() {
 
                 <div className="pt-4 border-t">
                   <p className="text-sm text-center text-muted-foreground">
-                    <strong>Dica:</strong> VIPs nível Ouro ou superior têm acesso gratuito!{' '}
+                    <strong>Dica:</strong> VIPs nível Platina ou superior têm acesso gratuito!{' '}
                     <button 
                       onClick={() => navigate('/vip/performance')}
                       className="text-primary underline"
