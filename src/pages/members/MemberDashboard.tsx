@@ -51,8 +51,7 @@ const tierColors: Record<string, { gradient: string; bg: string; text: string; i
   gold: { gradient: 'from-yellow-400 to-amber-500', bg: 'bg-yellow-500/10', text: 'text-yellow-500', icon: <Crown className="h-4 w-4" /> },
   ouro: { gradient: 'from-yellow-400 to-amber-500', bg: 'bg-yellow-500/10', text: 'text-yellow-500', icon: <Crown className="h-4 w-4" /> },
   diamond: { gradient: 'from-cyan-400 to-blue-500', bg: 'bg-cyan-400/10', text: 'text-cyan-400', icon: <Sparkles className="h-4 w-4" /> },
-  platinum: { gradient: 'from-violet-400 to-purple-600', bg: 'bg-violet-400/10', text: 'text-violet-400', icon: <Sparkles className="h-4 w-4" /> },
-  platina: { gradient: 'from-violet-400 to-purple-600', bg: 'bg-violet-400/10', text: 'text-violet-400', icon: <Sparkles className="h-4 w-4" /> },
+  diamante: { gradient: 'from-cyan-400 to-blue-500', bg: 'bg-cyan-400/10', text: 'text-cyan-400', icon: <Sparkles className="h-4 w-4" /> },
 };
 
 const MemberDashboard = () => {

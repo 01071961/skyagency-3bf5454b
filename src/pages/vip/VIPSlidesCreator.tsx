@@ -204,12 +204,12 @@ export default function VIPSlidesCreator() {
       
       if (affiliate) {
         const tierLower = (affiliate.tier || 'bronze').toLowerCase();
-        hasAccessResult = ['ouro', 'gold', 'platinum', 'platina', 'diamond', 'diamante'].includes(tierLower);
+        hasAccessResult = ['ouro', 'gold', 'diamond', 'diamante'].includes(tierLower);
       }
       
       if (profile?.subscription_tier) {
         const subTierLower = profile.subscription_tier.toLowerCase();
-        if (['gold', 'platinum', 'ouro', 'platina'].includes(subTierLower) && 
+        if (['gold', 'ouro', 'diamond', 'diamante'].includes(subTierLower) && 
             profile.subscription_status === 'active') {
           hasAccessResult = true;
         }
@@ -652,7 +652,7 @@ export default function VIPSlidesCreator() {
           </div>
           <h1 className="text-3xl font-bold mb-4">Criador de Slides VIP</h1>
           <p className="text-muted-foreground mb-6">
-            Esta funcionalidade exclusiva está disponível apenas para membros <span className="text-amber-500 font-semibold">Ouro</span> ou <span className="text-purple-500 font-semibold">Platina</span>.
+            Esta funcionalidade exclusiva está disponível apenas para membros <span className="text-amber-500 font-semibold">Ouro</span> ou <span className="text-cyan-500 font-semibold">Diamante</span>.
           </p>
         </div>
 
@@ -689,7 +689,7 @@ export default function VIPSlidesCreator() {
             Fazer Upgrade Agora
           </Button>
           <p className="text-sm text-muted-foreground">
-            Assine Gold ou Platina e libere todos os recursos
+            Assine Ouro ou Diamante e libere todos os recursos
           </p>
         </div>
       </div>

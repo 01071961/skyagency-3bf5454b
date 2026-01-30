@@ -155,8 +155,7 @@
       "bronze": "Bronze",
       "silver": "Silver",
       "gold": "Gold",
-      "diamond": "Diamond",
-      "platinum": "Platinum"
+      "diamond": "Diamond"
     },
     "social": {
       "posts": "Posts",

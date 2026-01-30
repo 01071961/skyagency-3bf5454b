@@ -80,8 +80,6 @@ const tierLabels: Record<string, string> = {
   silver: 'Prata',
   ouro: 'Ouro',
   gold: 'Ouro',
-  platinum: 'Platinum',
-  platina: 'Platinum',
   diamond: 'Diamante',
   diamante: 'Diamante'
 };
@@ -92,8 +90,6 @@ const tierColors: Record<string, string> = {
   silver: 'bg-gray-400',
   ouro: 'bg-yellow-500',
   gold: 'bg-yellow-500',
-  platinum: 'bg-purple-500',
-  platina: 'bg-purple-500',
   diamond: 'bg-cyan-500',
   diamante: 'bg-cyan-500'
 };
@@ -159,7 +155,7 @@ export default function VIPCreator() {
 
       // Verificar se pode ser creator - normalizar tier para lowercase
       const tierLower = (affiliate.tier || 'bronze').toLowerCase();
-      const isGoldOrHigher = ['ouro', 'gold', 'platinum', 'platina', 'diamond', 'diamante'].includes(tierLower);
+      const isGoldOrHigher = ['ouro', 'gold', 'diamond', 'diamante'].includes(tierLower);
       
       console.log('[VIPCreator] Tier check:', { tier: affiliate.tier, tierLower, isGoldOrHigher });
       
@@ -272,7 +268,7 @@ export default function VIPCreator() {
       }
 
       const tierLower = (affiliate.tier || 'bronze').toLowerCase();
-      const isGoldOrHigher = ['ouro', 'gold', 'platinum', 'platina', 'diamond', 'diamante'].includes(tierLower);
+      const isGoldOrHigher = ['ouro', 'gold', 'diamond', 'diamante'].includes(tierLower);
 
       console.log('[VIPCreator] Activating creator:', { tier: affiliate.tier, tierLower, isGoldOrHigher });
 

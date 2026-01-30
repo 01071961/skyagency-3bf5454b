@@ -1384,7 +1384,7 @@ serve(async (req) => {
               
               // ALSO update vip_affiliates tier based on subscription
               const normalizedTier = subscriptionTier.toLowerCase();
-              const vipTier = normalizedTier.includes('plat') ? 'platinum' : 
+              const vipTier = normalizedTier.includes('diamond') || normalizedTier.includes('diamante') ? 'diamond' : 
                               normalizedTier.includes('gold') || normalizedTier.includes('ouro') ? 'gold' :
                               normalizedTier.includes('silver') || normalizedTier.includes('prata') ? 'silver' : 'bronze';
               
@@ -1489,7 +1489,7 @@ serve(async (req) => {
                 
                 if (affiliate) {
                   // Only disable if not Gold+ tier
-                  const isGoldOrHigher = ['ouro', 'gold', 'platinum', 'platina'].includes(affiliate.tier?.toLowerCase() || '');
+                  const isGoldOrHigher = ['ouro', 'gold', 'diamond', 'diamante'].includes(affiliate.tier?.toLowerCase() || '');
                   
                   if (!isGoldOrHigher) {
                     await supabase

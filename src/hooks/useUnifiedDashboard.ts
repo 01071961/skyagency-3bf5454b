@@ -37,7 +37,7 @@ interface UnifiedDashboardData {
   }[];
 }
 
-const tierOrder = ['bronze', 'silver', 'gold', 'diamond', 'platinum'];
+const tierOrder = ['bronze', 'silver', 'gold', 'diamond'];
 
 export function useUnifiedDashboard() {
   const { user } = useAuth();
@@ -133,9 +133,9 @@ export function useUnifiedDashboard() {
         if (currentTierIndex < tierOrder.length - 1) {
           nextTier = tierOrder[currentTierIndex + 1];
           // Simple progress calculation based on referrals/earnings
-          const thresholds = { bronze: 0, silver: 5, gold: 20, diamond: 50, platinum: 100 };
+          const thresholds = { bronze: 0, silver: 5, gold: 15, diamond: 50 };
           const currentThreshold = thresholds[affiliate.tier?.toLowerCase() as keyof typeof thresholds] || 0;
-          const nextThreshold = thresholds[nextTier as keyof typeof thresholds] || 100;
+          const nextThreshold = thresholds[nextTier as keyof typeof thresholds] || 50;
           tierProgress = Math.min(100, Math.round(
             ((affiliate.referral_count || 0) - currentThreshold) / (nextThreshold - currentThreshold) * 100
           ));

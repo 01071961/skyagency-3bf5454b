@@ -34,7 +34,6 @@ const tierColors: Record<string, string> = {
   silver: 'bg-slate-400',
   gold: 'bg-yellow-500',
   diamond: 'bg-cyan-500',
-  platinum: 'bg-violet-500',
 };
 
 interface Author {

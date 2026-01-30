@@ -16,7 +16,7 @@ import { useAuth } from '@/auth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-const tierOrder = ['bronze', 'silver', 'gold', 'diamond', 'platinum'];
+const tierOrder = ['bronze', 'silver', 'gold', 'diamond'];
 
 const rewardCategories = [
   { id: 'all', label: 'Todas', icon: Gift },
