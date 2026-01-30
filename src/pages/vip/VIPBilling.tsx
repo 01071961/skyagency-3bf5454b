@@ -29,6 +29,41 @@ interface Plan {
 
 const PLANS: Plan[] = [
   {
+    id: 'bronze',
+    name: 'Bronze',
+    tier: 'bronze',
+    price: 30,
+    period: 'mês',
+    priceId: 'price_bronze_monthly', // Configure no Stripe Dashboard
+    icon: Shield,
+    gradient: 'from-amber-700 to-amber-900',
+    features: [
+      'Acesso à plataforma VIP',
+      'Comunidade de afiliados',
+      'Materiais de marketing básicos',
+      'Suporte por email',
+      'Comissão base (10%)',
+    ]
+  },
+  {
+    id: 'silver',
+    name: 'Prata',
+    tier: 'silver',
+    price: 75,
+    period: 'mês',
+    priceId: 'price_silver_monthly', // Configure no Stripe Dashboard
+    icon: Zap,
+    gradient: 'from-slate-400 to-slate-600',
+    features: [
+      'Tudo do Bronze +',
+      'Criador de Slides básico',
+      'Templates adicionais',
+      'Suporte prioritário',
+      'Comissões aumentadas (12%)',
+      'Relatórios de vendas',
+    ]
+  },
+  {
     id: 'gold',
     name: 'Ouro',
     tier: 'gold',
@@ -38,12 +73,12 @@ const PLANS: Plan[] = [
     icon: Crown,
     gradient: 'from-amber-500 to-orange-600',
     features: [
+      'Tudo do Prata +',
       'Criador de Slides VIP',
       'Exportação PDF/PowerPoint',
       'Geração com IA',
       'Compartilhamento público',
-      'Suporte prioritário',
-      'Comissões aumentadas (+5%)',
+      'Comissões aumentadas (15%)',
     ]
   },
   {
@@ -62,7 +97,7 @@ const PLANS: Plan[] = [
       'Armazenamento ilimitado',
       'API de integração',
       'Mentoria mensal',
-      'Comissões máximas (+10%)',
+      'Comissões máximas (20%)',
       'Badge exclusiva no perfil',
       'Acesso beta a novidades',
     ]
@@ -252,7 +287,7 @@ export default function VIPBilling() {
       )}
 
       {/* Plans Grid */}
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
         {PLANS.map((plan, index) => {
           const Icon = plan.icon;
           const isCurrent = isCurrentPlan(plan.tier);
