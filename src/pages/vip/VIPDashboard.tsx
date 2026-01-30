@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
   Diamond, Gift, Users, TrendingUp, Wallet, 
-  Star, Crown, Copy, 
+  Star, Crown, Copy, Sparkles,
   CheckCircle,
   Link2, PlusCircle,
   ChevronRight, Target, Zap,
   FileText, Presentation, Edit, CreditCard, Activity,
   ArrowUpRight, Trophy, Flame, GraduationCap, BookOpen,
-  Award, FolderOpen, RefreshCw
+  Award, FolderOpen, RefreshCw, DollarSign
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -52,13 +52,15 @@ interface PresentationData {
   updated_at: string;
 }
 
-// Configuração de cores por tier (Bronze, Prata, Ouro, Diamante - sem Platinum)
+// Configuração de cores por tier - 5 níveis completos
 const tierColors: Record<string, { gradient: string; bg: string; text: string }> = {
   bronze: { gradient: 'from-amber-600 to-amber-800', bg: 'bg-amber-500/10', text: 'text-amber-500' },
   silver: { gradient: 'from-slate-400 to-slate-600', bg: 'bg-slate-400/10', text: 'text-slate-400' },
   prata: { gradient: 'from-slate-400 to-slate-600', bg: 'bg-slate-400/10', text: 'text-slate-400' },
   gold: { gradient: 'from-yellow-400 to-amber-500', bg: 'bg-yellow-500/10', text: 'text-yellow-500' },
   ouro: { gradient: 'from-yellow-400 to-amber-500', bg: 'bg-yellow-500/10', text: 'text-yellow-500' },
+  platinum: { gradient: 'from-purple-500 to-violet-600', bg: 'bg-purple-500/10', text: 'text-purple-500' },
+  platina: { gradient: 'from-purple-500 to-violet-600', bg: 'bg-purple-500/10', text: 'text-purple-500' },
   diamond: { gradient: 'from-cyan-400 to-blue-500', bg: 'bg-cyan-400/10', text: 'text-cyan-400' },
   diamante: { gradient: 'from-cyan-400 to-blue-500', bg: 'bg-cyan-400/10', text: 'text-cyan-400' },
 };
@@ -69,16 +71,19 @@ const tierIcons: Record<string, React.ReactNode> = {
   prata: <Star className="h-4 w-4" />,
   gold: <Crown className="h-4 w-4" />,
   ouro: <Crown className="h-4 w-4" />,
+  platinum: <Sparkles className="h-4 w-4" />,
+  platina: <Sparkles className="h-4 w-4" />,
   diamond: <Diamond className="h-4 w-4" />,
   diamante: <Diamond className="h-4 w-4" />,
 };
 
-// Thresholds de pontos conforme especificação (Bronze 0-499, Prata 500-1999, Ouro 2000-9999, Diamante 10000+)
+// Thresholds de pontos e PV/GV conforme nova especificação
 const tierThresholds = [
-  { tier: 'bronze', min: 0, max: 499 },
-  { tier: 'silver', min: 500, max: 1999 },
-  { tier: 'gold', min: 2000, max: 9999 },
-  { tier: 'diamond', min: 10000, max: Infinity },
+  { tier: 'bronze', min: 0, max: 499, minPV: 300, minGV: 0 },
+  { tier: 'silver', min: 500, max: 1999, minPV: 1200, minGV: 6000 },
+  { tier: 'gold', min: 2000, max: 4999, minPV: 3000, minGV: 30000 },
+  { tier: 'platinum', min: 5000, max: 9999, minPV: 6000, minGV: 120000 },
+  { tier: 'diamond', min: 10000, max: Infinity, minPV: 15000, minGV: 600000 },
 ];
 
 export default function VIPDashboard() {
@@ -92,6 +97,10 @@ export default function VIPDashboard() {
     totalPoints: realtimeTotalPoints,
     directReferrals: realtimeReferrals,
     availableBalance: realtimeBalance,
+    personalVolume,
+    groupVolume,
+    qualifiedReferrals,
+    canSellProducts,
     isLoading: tierLoading,
     refetch: refreshTier 
   } = useRealtimeTier();
@@ -379,6 +388,129 @@ export default function VIPDashboard() {
             </Card>
           </motion.div>
         ))}
+      </motion.div>
+
+      {/* PV/GV Progress Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.25 }}
+      >
+        <Card className="glass-card">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Target className="h-5 w-5 text-primary" />
+              Metas de Qualificação Mensal
+            </CardTitle>
+            <CardDescription>
+              Seu progresso para manter/avançar de nível
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* PV Card */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-emerald-500/10">
+                      <DollarSign className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <span className="font-medium">Volume Pessoal (PV)</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    R$ {personalVolume.toLocaleString()} / R$ {tierThresholds.find(t => t.tier === displayTier)?.minPV?.toLocaleString() || 0}
+                  </Badge>
+                </div>
+                <Progress 
+                  value={Math.min(100, (personalVolume / (tierThresholds.find(t => t.tier === displayTier)?.minPV || 1)) * 100)} 
+                  className="h-2"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Vendas pessoais no mês atual
+                </p>
+              </div>
+
+              {/* GV Card */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-blue-500/10">
+                      <Users className="h-4 w-4 text-blue-500" />
+                    </div>
+                    <span className="font-medium">Volume de Grupo (GV)</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    R$ {groupVolume.toLocaleString()} / R$ {tierThresholds.find(t => t.tier === displayTier)?.minGV?.toLocaleString() || 0}
+                  </Badge>
+                </div>
+                <Progress 
+                  value={Math.min(100, (groupVolume / (tierThresholds.find(t => t.tier === displayTier)?.minGV || 1)) * 100)} 
+                  className="h-2"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Volume total da sua rede (downline)
+                </p>
+              </div>
+            </div>
+
+            {/* Referrals Progress */}
+            <div className="pt-4 border-t">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-lg bg-purple-500/10">
+                    <Users className="h-4 w-4 text-purple-500" />
+                  </div>
+                  <span className="font-medium">Indicações Qualificadas</span>
+                </div>
+                <Badge variant="secondary">
+                  {qualifiedReferrals} / {tierThresholds.find(t => t.tier === getNextTier()?.tier)?.minPV ? '...' : realtimeReferrals} ativos
+                </Badge>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {Array.from({ length: Math.max(5, realtimeReferrals) }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                      i < qualifiedReferrals
+                        ? 'bg-emerald-500 text-white'
+                        : i < realtimeReferrals
+                        ? 'bg-amber-500/20 text-amber-600'
+                        : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {i + 1}
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                🟢 Qualificados (Bronze+) • 🟡 Pendentes • ⚪ Faltam
+              </p>
+            </div>
+
+            {/* Upgrade CTA */}
+            <div className="pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <p className="font-medium">
+                  {getNextTier() ? (
+                    <>Próximo nível: <span className="capitalize text-primary">{getNextTier()?.tier}</span></>
+                  ) : (
+                    <span className="text-cyan-500">🏆 Você está no nível máximo!</span>
+                  )}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {getNextTier() 
+                    ? `Faltam ${(getNextTier()!.min - mergedPoints.total_earned).toLocaleString()} pontos`
+                    : 'Continue mantendo suas metas!'
+                  }
+                </p>
+              </div>
+              <Button onClick={() => navigate('/vip/billing')} className="bg-gradient-to-r from-primary to-primary/80">
+                <Zap className="h-4 w-4 mr-2" />
+                {isGoldOrHigher ? 'Gerenciar Plano' : 'Comprar Upgrade'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Quick Actions */}
