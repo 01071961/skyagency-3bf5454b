@@ -42,7 +42,7 @@ serve(async (req) => {
     }
 
     const tierLower = (affiliate.tier || 'bronze').toLowerCase();
-    const isGoldOrHigher = ['ouro', 'gold', 'platinum', 'platina', 'diamond', 'diamante'].includes(tierLower);
+    const isGoldOrHigher = ['ouro', 'gold', 'diamond', 'diamante'].includes(tierLower);
 
     if (!isGoldOrHigher) {
       throw new Error("This feature requires Gold tier or higher");

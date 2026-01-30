@@ -61,18 +61,6 @@ const tierConfig = {
     borderColor: 'border-cyan-400/30',
     textColor: 'text-cyan-400',
     icon: Diamond,
-    minPoints: 5000,
-    maxPoints: 9999,
-    commission: 18,
-    benefits: ['Acesso antecipado a produtos', 'Grupo VIP Diamante', 'Comissão 18%']
-  },
-  platinum: {
-    name: 'Platina',
-    color: 'from-violet-400 via-purple-300 to-purple-500',
-    bgColor: 'bg-violet-400/10',
-    borderColor: 'border-violet-400/30',
-    textColor: 'text-violet-400',
-    icon: Diamond,
     minPoints: 10000,
     maxPoints: Infinity,
     commission: 20,

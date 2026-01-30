@@ -68,11 +68,10 @@ const ConnectionLines = () => {
 };
 
 const diamondTiers = [
-  { position: [-2, 1, 0] as [number, number, number], color: '#00d4ff', scale: 0.8, tier: 'Bronze', value: '100' },
-  { position: [0, 2, 0] as [number, number, number], color: '#a855f7', scale: 1, tier: 'Prata', value: '500' },
-  { position: [2, 1, 0] as [number, number, number], color: '#ff4d9d', scale: 1.2, tier: 'Ouro', value: '1000' },
-  { position: [1, -1, 0] as [number, number, number], color: '#ff8c00', scale: 1.4, tier: 'Platina', value: '5000' },
-  { position: [-1, -1, 0] as [number, number, number], color: '#ffd700', scale: 1.6, tier: 'Diamante', value: '10000' },
+  { position: [-2, 1, 0] as [number, number, number], color: '#cd7f32', scale: 0.8, tier: 'Bronze', value: '100' },
+  { position: [0, 2, 0] as [number, number, number], color: '#a8a9ad', scale: 1, tier: 'Prata', value: '500' },
+  { position: [2, 1, 0] as [number, number, number], color: '#ffd700', scale: 1.2, tier: 'Ouro', value: '2000' },
+  { position: [0, -1, 0] as [number, number, number], color: '#00d4ff', scale: 1.6, tier: 'Diamante', value: '10000' },
 ];
 
 interface DiamondConstellationProps {

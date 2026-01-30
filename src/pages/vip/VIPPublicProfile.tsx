@@ -24,7 +24,6 @@ const tierConfig: Record<string, { color: string; bgColor: string; label: string
   silver: { color: 'from-slate-400 to-slate-600', bgColor: 'bg-slate-400/10', label: 'Prata', icon: <Star className="h-5 w-5" /> },
   gold: { color: 'from-yellow-400 to-yellow-600', bgColor: 'bg-yellow-500/10', label: 'Ouro', icon: <Crown className="h-5 w-5" /> },
   diamond: { color: 'from-cyan-400 to-blue-600', bgColor: 'bg-cyan-400/10', label: 'Diamante', icon: <Diamond className="h-5 w-5" /> },
-  platinum: { color: 'from-violet-400 to-purple-600', bgColor: 'bg-violet-400/10', label: 'Platinum', icon: <Diamond className="h-5 w-5" /> },
 };
 
 export default function VIPPublicProfile() {

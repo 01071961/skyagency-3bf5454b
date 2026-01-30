@@ -358,7 +358,7 @@ const Platform = () => {
               
               {/* Labels */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 flex-wrap justify-center">
-                {['Bronze', 'Prata', 'Ouro', 'Platina', 'Diamante'].map((tier, i) => (
+                {['Bronze', 'Prata', 'Ouro', 'Diamante'].map((tier, i) => (
                   <span key={tier} className="px-3 py-1 bg-card/80 backdrop-blur rounded-full text-xs border border-border">
                     {tier}
                   </span>

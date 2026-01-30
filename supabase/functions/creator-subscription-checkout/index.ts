@@ -55,7 +55,7 @@ serve(async (req) => {
     }
 
     // Check if already a gold+ tier (free access)
-    const isGoldOrHigher = ['ouro', 'gold', 'platinum', 'platina'].includes(affiliate.tier?.toLowerCase() || '');
+    const isGoldOrHigher = ['ouro', 'gold', 'diamond', 'diamante'].includes(affiliate.tier?.toLowerCase() || '');
     if (isGoldOrHigher) {
       // Activate creator for free
       await supabase

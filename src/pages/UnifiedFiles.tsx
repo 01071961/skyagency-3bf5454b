@@ -129,7 +129,7 @@ export default function UnifiedFiles() {
 
       const isVip = affiliateData?.status === 'approved' || 
                     (profileData as any)?.plan === 'gold' || 
-                    (profileData as any)?.plan === 'platinum';
+                    (profileData as any)?.plan === 'diamond';
 
       setUserRole({
         role: isAdmin ? 'admin' : isVip ? 'vip' : 'user',

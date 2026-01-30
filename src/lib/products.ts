@@ -3,16 +3,15 @@
  * v4.0.0 - Updated with VIP tier-based access control
  */
 
-// VIP tier hierarchy (lower index = lower tier)
-export const VIP_TIER_ORDER = ['bronze', 'silver', 'gold', 'diamond', 'platinum'] as const;
+// VIP tier hierarchy (lower index = lower tier) - Only 4 tiers: Bronze, Silver, Gold, Diamond
+export const VIP_TIER_ORDER = ['bronze', 'silver', 'gold', 'diamond'] as const;
 export type VipTier = typeof VIP_TIER_ORDER[number];
 
 export const VIP_TIER_INFO: Record<VipTier, { label: string; icon: string; minPoints: number }> = {
   bronze: { label: 'Bronze', icon: '🥉', minPoints: 0 },
   silver: { label: 'Prata', icon: '🥈', minPoints: 500 },
   gold: { label: 'Ouro', icon: '🥇', minPoints: 2000 },
-  diamond: { label: 'Diamante', icon: '💎', minPoints: 5000 },
-  platinum: { label: 'Platina', icon: '👑', minPoints: 10000 },
+  diamond: { label: 'Diamante', icon: '💎', minPoints: 10000 },
 };
 
 export interface ProductPriceInfo {
