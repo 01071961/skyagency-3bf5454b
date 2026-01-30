@@ -541,6 +541,60 @@ export type Database = {
           },
         ]
       }
+      affiliate_tier_config: {
+        Row: {
+          can_sell_products: boolean | null
+          commission_rate: number
+          created_at: string | null
+          id: string
+          max_points: number | null
+          min_gv: number | null
+          min_points: number | null
+          min_pv: number
+          min_qualified_referrals: number | null
+          min_referrals: number | null
+          package_price: number | null
+          package_stripe_price_id: string | null
+          tier: string
+          tier_order: number
+          updated_at: string | null
+        }
+        Insert: {
+          can_sell_products?: boolean | null
+          commission_rate?: number
+          created_at?: string | null
+          id?: string
+          max_points?: number | null
+          min_gv?: number | null
+          min_points?: number | null
+          min_pv?: number
+          min_qualified_referrals?: number | null
+          min_referrals?: number | null
+          package_price?: number | null
+          package_stripe_price_id?: string | null
+          tier: string
+          tier_order?: number
+          updated_at?: string | null
+        }
+        Update: {
+          can_sell_products?: boolean | null
+          commission_rate?: number
+          created_at?: string | null
+          id?: string
+          max_points?: number | null
+          min_gv?: number | null
+          min_points?: number | null
+          min_pv?: number
+          min_qualified_referrals?: number | null
+          min_referrals?: number | null
+          package_price?: number | null
+          package_stripe_price_id?: string | null
+          tier?: string
+          tier_order?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ai_assistant_settings: {
         Row: {
           created_at: string | null
@@ -3350,11 +3404,16 @@ export type Database = {
           bio: string | null
           created_at: string | null
           direct_referrals_count: number | null
+          group_volume: number | null
           id: string
           is_creator: boolean | null
+          last_qualification_date: string | null
           level1_count: number | null
           level2_count: number | null
+          personal_volume: number | null
           pix_key: string | null
+          qualification_expires_at: string | null
+          qualified_referrals_count: number | null
           referral_code: string
           referral_count: number | null
           social_links: Json | null
@@ -3362,6 +3421,7 @@ export type Database = {
           status: string | null
           team_earnings: number | null
           tier: Database["public"]["Enums"]["affiliate_tier"] | null
+          tier_package_id: string | null
           total_earnings: number | null
           total_referrals: number | null
           total_sales: number | null
@@ -3375,11 +3435,16 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           direct_referrals_count?: number | null
+          group_volume?: number | null
           id?: string
           is_creator?: boolean | null
+          last_qualification_date?: string | null
           level1_count?: number | null
           level2_count?: number | null
+          personal_volume?: number | null
           pix_key?: string | null
+          qualification_expires_at?: string | null
+          qualified_referrals_count?: number | null
           referral_code: string
           referral_count?: number | null
           social_links?: Json | null
@@ -3387,6 +3452,7 @@ export type Database = {
           status?: string | null
           team_earnings?: number | null
           tier?: Database["public"]["Enums"]["affiliate_tier"] | null
+          tier_package_id?: string | null
           total_earnings?: number | null
           total_referrals?: number | null
           total_sales?: number | null
@@ -3400,11 +3466,16 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           direct_referrals_count?: number | null
+          group_volume?: number | null
           id?: string
           is_creator?: boolean | null
+          last_qualification_date?: string | null
           level1_count?: number | null
           level2_count?: number | null
+          personal_volume?: number | null
           pix_key?: string | null
+          qualification_expires_at?: string | null
+          qualified_referrals_count?: number | null
           referral_code?: string
           referral_count?: number | null
           social_links?: Json | null
@@ -3412,6 +3483,7 @@ export type Database = {
           status?: string | null
           team_earnings?: number | null
           tier?: Database["public"]["Enums"]["affiliate_tier"] | null
+          tier_package_id?: string | null
           total_earnings?: number | null
           total_referrals?: number | null
           total_sales?: number | null
@@ -3735,7 +3807,7 @@ export type Database = {
         | { Args: { _role: string; _user_id: string }; Returns: boolean }
     }
     Enums: {
-      affiliate_tier: "bronze" | "silver" | "gold" | "diamond"
+      affiliate_tier: "bronze" | "silver" | "gold" | "platinum" | "diamond"
       app_role: "user" | "streamer" | "admin" | "owner" | "editor"
       enrollment_status: "active" | "completed" | "cancelled" | "expired"
       order_status: "pending" | "paid" | "cancelled" | "refunded" | "expired"
@@ -3873,7 +3945,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      affiliate_tier: ["bronze", "silver", "gold", "diamond"],
+      affiliate_tier: ["bronze", "silver", "gold", "platinum", "diamond"],
       app_role: ["user", "streamer", "admin", "owner", "editor"],
       enrollment_status: ["active", "completed", "cancelled", "expired"],
       order_status: ["pending", "paid", "cancelled", "refunded", "expired"],

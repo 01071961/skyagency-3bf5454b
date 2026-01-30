@@ -62,7 +62,8 @@ const defaultTierInfo: TierInfo = {
   totalEarnings: 0,
 };
 
-const TIER_ORDER = ['bronze', 'silver', 'prata', 'gold', 'ouro', 'diamond', 'diamante'];
+// Ordem correta: Bronze < Prata < Ouro < Platina < Diamante
+const TIER_ORDER = ['bronze', 'silver', 'gold', 'platinum', 'diamond'];
 
 const normalizeTier = (tier: string | null | undefined): string => {
   if (!tier) return 'bronze';
@@ -70,6 +71,7 @@ const normalizeTier = (tier: string | null | undefined): string => {
   const aliases: Record<string, string> = {
     'ouro': 'gold',
     'prata': 'silver',
+    'platina': 'platinum',
     'diamante': 'diamond',
   };
   return aliases[t] || t;
@@ -226,11 +228,12 @@ export const useRealtimeProfile = () => {
 
   const displayName = profile.name || user?.email?.split('@')[0] || 'Usuário';
 
-  // Tier display helpers
+  // Tier display helpers - 5 níveis completos
   const tierConfig: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
     bronze: { label: 'Bronze', color: 'text-orange-700', bgColor: 'bg-orange-100', icon: '🥉' },
     silver: { label: 'Prata', color: 'text-gray-600', bgColor: 'bg-gray-100', icon: '🥈' },
     gold: { label: 'Ouro', color: 'text-yellow-600', bgColor: 'bg-yellow-100', icon: '🥇' },
+    platinum: { label: 'Platina', color: 'text-purple-600', bgColor: 'bg-purple-100', icon: '💠' },
     diamond: { label: 'Diamante', color: 'text-cyan-600', bgColor: 'bg-cyan-100', icon: '💎' },
   };
 

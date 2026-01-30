@@ -14,6 +14,12 @@ export interface TierRequirements {
   commissionRate: number;
   minPoints: number;
   maxPoints: number;
+  // Novos campos para metas PV/GV
+  minPV: number;
+  minGV: number;
+  minQualifiedReferrals: number;
+  packagePrice: number;
+  canSellProducts: boolean;
 }
 
 export interface TierConfig extends TierRequirements {
@@ -30,7 +36,8 @@ export interface TierConfig extends TierRequirements {
   mlmRates: number[];  // Taxas MLM por nível [L1, L2, L3, L4]
 }
 
-// Configuração completa dos tiers conforme especificação
+// Configuração completa dos 5 tiers SKY BRASIL
+// PV/GV em R$ | Pacotes para compra direta | Requalificação mensal rigorosa
 export const TIER_CONFIG: Record<string, TierConfig> = {
   bronze: {
     key: 'bronze',
@@ -45,10 +52,16 @@ export const TIER_CONFIG: Record<string, TierConfig> = {
     borderColor: 'border-amber-500/30',
     minReferrals: 0,
     minReferralSales: 0,
-    commissionRate: 10,
+    commissionRate: 12.5,
     minPoints: 0,
     maxPoints: 499,
     mlmRates: [5, 2, 1, 0.5],
+    // Metas PV/GV
+    minPV: 300,
+    minGV: 0,
+    minQualifiedReferrals: 0,
+    packagePrice: 900,
+    canSellProducts: false,
   },
   silver: {
     key: 'silver',
@@ -61,12 +74,18 @@ export const TIER_CONFIG: Record<string, TierConfig> = {
     bgColor: 'bg-slate-500/10',
     textColor: 'text-slate-500',
     borderColor: 'border-slate-500/30',
-    minReferrals: 5,
-    minReferralSales: 500,
-    commissionRate: 12,
+    minReferrals: 3,
+    minReferralSales: 6000,
+    commissionRate: 20,
     minPoints: 500,
     maxPoints: 1999,
-    mlmRates: [5, 2, 1, 0.5],
+    mlmRates: [6, 3, 1.5, 0.75],
+    // Metas PV/GV
+    minPV: 1200,
+    minGV: 6000,
+    minQualifiedReferrals: 3,
+    packagePrice: 2700,
+    canSellProducts: false,
   },
   gold: {
     key: 'gold',
@@ -79,12 +98,18 @@ export const TIER_CONFIG: Record<string, TierConfig> = {
     bgColor: 'bg-yellow-500/10',
     textColor: 'text-yellow-600',
     borderColor: 'border-yellow-500/30',
-    minReferrals: 15,
-    minReferralSales: 2000,
-    commissionRate: 15,
+    minReferrals: 8,
+    minReferralSales: 30000,
+    commissionRate: 27.5,
     minPoints: 2000,
     maxPoints: 4999,
-    mlmRates: [5, 2, 1, 0.5],
+    mlmRates: [7, 3.5, 2, 1],
+    // Metas PV/GV - LIBERA VENDA DE PRODUTOS PRÓPRIOS
+    minPV: 3000,
+    minGV: 30000,
+    minQualifiedReferrals: 3,
+    packagePrice: 10500,
+    canSellProducts: true,
   },
   platinum: {
     key: 'platinum',
@@ -97,12 +122,18 @@ export const TIER_CONFIG: Record<string, TierConfig> = {
     bgColor: 'bg-purple-500/10',
     textColor: 'text-purple-500',
     borderColor: 'border-purple-500/30',
-    minReferrals: 30,
-    minReferralSales: 5000,
-    commissionRate: 18,
+    minReferrals: 14,
+    minReferralSales: 120000,
+    commissionRate: 37.5,
     minPoints: 5000,
     maxPoints: 9999,
-    mlmRates: [5, 2, 1, 0.5],
+    mlmRates: [8, 4, 2.5, 1.25],
+    // Metas PV/GV
+    minPV: 6000,
+    minGV: 120000,
+    minQualifiedReferrals: 4,
+    packagePrice: 52500,
+    canSellProducts: true,
   },
   diamond: {
     key: 'diamond',
@@ -115,12 +146,18 @@ export const TIER_CONFIG: Record<string, TierConfig> = {
     bgColor: 'bg-cyan-500/10',
     textColor: 'text-cyan-500',
     borderColor: 'border-cyan-500/30',
-    minReferrals: 50,
-    minReferralSales: 10000,
-    commissionRate: 20,
+    minReferrals: 33,
+    minReferralSales: 600000,
+    commissionRate: 47.5,
     minPoints: 10000,
     maxPoints: Infinity,
-    mlmRates: [5, 2, 1, 0.5],
+    mlmRates: [10, 5, 3, 1.5],
+    // Metas PV/GV
+    minPV: 15000,
+    minGV: 600000,
+    minQualifiedReferrals: 6,
+    packagePrice: 210000,
+    canSellProducts: true,
   },
 };
 
