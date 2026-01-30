@@ -18,6 +18,11 @@ export interface TierInfo {
   directReferrals: number;
   totalSales: number;
   availableBalance: number;
+  // Novos campos PV/GV
+  personalVolume: number;
+  groupVolume: number;
+  qualifiedReferrals: number;
+  canSellProducts: boolean;
 }
 
 // 5 tiers: Bronze, Prata, Ouro, Platina, Diamante
@@ -77,6 +82,11 @@ export const useRealtimeTier = () => {
     directReferrals: 0,
     totalSales: 0,
     availableBalance: 0,
+    // Novos campos
+    personalVolume: 0,
+    groupVolume: 0,
+    qualifiedReferrals: 0,
+    canSellProducts: false,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -96,7 +106,7 @@ export const useRealtimeTier = () => {
           .maybeSingle(),
         supabase
           .from('vip_affiliates')
-          .select('tier, direct_referrals_count, total_earnings, available_balance, status')
+          .select('tier, direct_referrals_count, total_earnings, available_balance, status, personal_volume, group_volume, qualified_referrals_count')
           .eq('user_id', user.id)
           .maybeSingle(),
         supabase
@@ -121,6 +131,11 @@ export const useRealtimeTier = () => {
       const directReferrals = affiliateData?.direct_referrals_count || 0;
       const totalSales = commissionsRes.data?.length || 0;
       const availableBalance = affiliateData?.available_balance || affiliateData?.total_earnings || 0;
+      
+      // Novos campos PV/GV
+      const personalVolume = Number(affiliateData?.personal_volume) || 0;
+      const groupVolume = Number(affiliateData?.group_volume) || 0;
+      const qualifiedReferrals = affiliateData?.qualified_referrals_count || 0;
 
       // Normalize tiers from all sources
       const affiliateTier = normalizeTier(affiliateData?.tier);
@@ -150,6 +165,9 @@ export const useRealtimeTier = () => {
 
       const effectiveLevel = getTierLevel(effectiveTier);
       const goldLevel = getTierLevel('gold');
+      
+      // Verifica se pode vender produtos (Ouro ou superior)
+      const canSellProducts = effectiveLevel >= goldLevel;
 
       setTierInfo({
         tier: affiliateTier,
@@ -166,6 +184,11 @@ export const useRealtimeTier = () => {
         directReferrals,
         totalSales,
         availableBalance,
+        // Novos campos
+        personalVolume,
+        groupVolume,
+        qualifiedReferrals,
+        canSellProducts,
       });
     } catch (error) {
       console.error('[useRealtimeTier] Error fetching tier:', error);
