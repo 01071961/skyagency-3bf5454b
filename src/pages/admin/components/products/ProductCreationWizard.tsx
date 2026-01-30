@@ -106,7 +106,7 @@ const EVENT_PLATFORMS = [
 
 // ============= Helper Functions =============
 const generateSlug = (name: string): string => {
-  return name
+  const baseSlug = name
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -114,6 +114,8 @@ const generateSlug = (name: string): string => {
     .replace(/[^a-z0-9-]/g, '')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '');
+  // Always add unique suffix to prevent duplicate key errors
+  return `${baseSlug}-${Date.now().toString(36)}`;
 };
 
 const generateId = () => `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
